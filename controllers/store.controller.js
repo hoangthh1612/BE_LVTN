@@ -10,12 +10,11 @@ const create = async (req, res) => {
         res.status(401).json({message: "Unauthozirated"});
     }
     try {
-        const {description, phone_number, address, avatar} = req.body;
+        const {shop_name, description, phone_number} = req.body;
         await Store.create({
+            shop_name,
             description,
             phone_number,
-            address,
-            avatar,
             userId: user.id
         })
         await User_role.create({
@@ -30,4 +29,28 @@ const create = async (req, res) => {
     }
 }
 
-module.exports = {create}
+const getStoreByUsername = async (req, res) => {
+    const user = await User.findOne({
+        where: {
+            username: req.username
+        }
+    })
+    if(!user) {
+        res.status(401).json({
+            message: "Unauthorizated"
+        })
+    }
+    //console.log(user.id);
+    try {
+        const store = await Store.findOne({
+            where: {
+                userId: user.id
+            }
+        })
+        res.status(200).json(store);    
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+module.exports = {create, getStoreByUsername}

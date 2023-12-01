@@ -39,8 +39,13 @@ module.exports = (sequelize, DataTypes) => {
       roomId: {
         type: DataTypes.STRING,
       },
+      inLive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+      },
       start_time: {
         type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
       },
       end_time: {
         type: DataTypes.DATE,

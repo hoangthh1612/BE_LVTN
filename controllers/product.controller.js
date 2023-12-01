@@ -14,9 +14,9 @@ const {
 } = require("../models");
 
 const getAll = async (req, res) => {
-  if (req.userRole == 1) {
-    return res.status(401).json({ error: "you dont have permision" });
-  }
+  // if (req.userRole == 1) {
+  //   return res.status(401).json({ error: "you dont have permision" });
+  // }
   const getProduct = await Product.findAll({
     include: Category,
   });
@@ -85,6 +85,7 @@ const getProductByStoreId = async (req, res) => {
   });
   return res.status(200).json(products);
 };
+
 
 // -> Create new product (POST)
 const createProduct = async (req, res) => {

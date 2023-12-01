@@ -89,6 +89,52 @@ const login = async (req, res) => {
   }
 };
 
+const loginSeller = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const foundUser = await User.findOne({ where: { username: username } });
+
+    if (!foundUser) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+    const isPasswordValid = await bcrypt.compare(password, foundUser.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const user_role = await User_role.findOne({ where: { userId: foundUser.id } }); // SAI vì 1 người có thể có nhiều role
+    // Đăng nhập thành công, tạo token JWT kèm theo thông tin vai trò của người dùng
+    const accessToken = jwt.sign(
+      // { userId: foundUser._id, userRole: foundUser.role }, // Chú ý ở đây: foundUser.role chính là thông tin về vai trò của người dùng
+      { username: foundUser.username },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const refreshToken = jwt.sign(
+      // { userId: foundUser._id, userRole: foundUser.role }, // Chú ý ở đây: foundUser.role chính là thông tin về vai trò của người dùng
+      { username: foundUser.username },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "360h" }
+    );
+    // Lưu thông tin user vào trong cookie
+    // Save in DB
+    foundUser.refreshToken = refreshToken;
+    await foundUser.save();
+    res.cookie('jwt', refreshToken, {
+      httpOnly: true,
+      sameSite: 'None', 
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000
+    });
+
+    res.json({ accessToken });
+  } catch (err) {
+    res.status(500).json({ error: "Login failed" });
+  }
+};
+
+
 const logout = async (req, res) => {
   const cookies = req.cookies;
   if(!cookies?.jwt) return res.sendStatus(204);

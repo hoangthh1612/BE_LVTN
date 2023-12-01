@@ -716,6 +716,7 @@ Voucher.create({
   Order.create({
     // id: 1,
     order_date: "2023-07-27T04:33:12.000Z",
+    order_sn: "#1245333",
     order_status: "pending",
     payment_method: "cash",
     total_price: 500000,
@@ -726,6 +727,7 @@ Voucher.create({
   Order.create({
     // id: 2,
     order_date: "2023-07-26T04:33:12.000Z",
+    order_sn: "#1741133",
     order_status: "completed",
     payment_method: "paypal",
     total_price: 600000,
@@ -736,6 +738,7 @@ Voucher.create({
   Order.create({
     // id: 3,
     order_date: "2023-07-28T04:33:12.000Z",
+    order_sn: "#2435313",
     order_status: "pending",
     payment_method: "cash",
     total_price: 400000,

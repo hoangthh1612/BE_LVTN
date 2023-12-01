@@ -50,9 +50,13 @@ module.exports = (sequelize, DataTypes) => {
           autoIncrement: true,
           allowNull: false,
         },
+        shop_name: {
+          type: DataTypes.STRING,
+        },
         description: {
             type: DataTypes.STRING,
           },
+        
         phone_number: {
           type: DataTypes.STRING,
         },

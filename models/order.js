@@ -37,6 +37,10 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true,
             allowNull: false,
           },
+        order_sn: {
+          type: DataTypes.STRING,
+          unique: true
+        },
         order_date: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
