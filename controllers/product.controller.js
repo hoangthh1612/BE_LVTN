@@ -13,55 +13,212 @@ const {
   Store,
 } = require("../models");
 
+const getVariationName = async (variationId) => {
+  const variation = await Variation.findOne({
+    where: {
+      id: variationId,
+    },
+  });
+  return variation.type_name;
+};
+
+const getProduct = async (productId) => {
+  const product = await Product.findOne({
+    where: {
+      id: productId,
+    },
+    include: Category,
+  });
+  const product_details = await Product_detail.findAll({
+    where: {
+      productId,
+    },
+  });
+  // const getProduct = {
+  //   ...product,
+  //   product_detail: product_details
+  // }
+  const productDetailIds = product_details?.map((item) => item.id);
+  const skus_variation_options = await ProductDetail_VariationOption.findAll({
+    where: {
+      productDetailId: productDetailIds,
+    },
+  });
+  const variation_options = await Variation_option.findAll({
+    where: {
+      id: skus_variation_options?.map((item) => item.variationOptionId),
+    },
+  });
+  let add_variations = [];
+  for (const item of variation_options) {
+    let name = await getVariationName(item.variationId);
+    add_variations.push({ ...item.dataValues, variation_name: name });
+  }
+  console.log(add_variations);
+  const combineVariation = skus_variation_options.map((item) => {
+    let result;
+    for (const i of add_variations) {
+      if (i.id === item.variationOptionId) {
+        result = i;
+      }
+    }
+    return { ...item.dataValues, variation_options: result };
+  });
+  const combine = product_details?.map((item) => {
+    let result = [];
+    for (const i of combineVariation) {
+      if (i.productDetailId === item.id) {
+        result.push({ ...i });
+      }
+    }
+    return {
+      ...item.dataValues,
+      skus_variation_options: result,
+    };
+  });
+  return { ...product.dataValues, product_details: combine };
+};
+
+
+
+const getProductById = async (req, res) => {
+  const { productId } = req.params;
+  const product = await Product.findOne({
+    where: {
+      id: productId,
+    },
+    include: Category,
+  });
+  const product_details = await Product_detail.findAll({
+    where: {
+      productId,
+    },
+  });
+  // const getProduct = {
+  //   ...product,
+  //   product_detail: product_details
+  // }
+  const productDetailIds = product_details?.map((item) => item.id);
+  const skus_variation_options = await ProductDetail_VariationOption.findAll({
+    where: {
+      productDetailId: productDetailIds,
+    },
+  });
+  const variation_options = await Variation_option.findAll({
+    where: {
+      id: skus_variation_options?.map((item) => item.variationOptionId),
+    },
+  });
+  let add_variations = [];
+  for (const item of variation_options) {
+    let name = await getVariationName(item.variationId);
+    add_variations.push({ ...item.dataValues, variation_name: name });
+  }
+  const combineVariation = skus_variation_options.map((item) => {
+    let result;
+    for (const i of add_variations) {
+      if (i.id === item.variationOptionId) {
+        result = i;
+      }
+    }
+    return { ...item.dataValues, variation_options: result };
+  });
+
+  const combine = product_details?.map((item) => {
+    let result = [];
+    for (const i of combineVariation) {
+      if (i.productDetailId === item.id) {
+        result.push({ ...i });
+      }
+    }
+    return {
+      ...item.dataValues,
+      skus_variation_options: result,
+    };
+  });
+  const variationIds = combine[0].skus_variation_options?.map(item => item.variation_options.variationId);
+  // const variations = await Variation.findAll({
+  //   where: {
+  //     id: variationIds
+  //   }
+  // })
+  let variations = [];
+  for(const id of variationIds) {
+    const variation = await Variation.findByPk(id);
+    const variation_options = await Variation_option.findAll({
+      where: {
+        variationId: id
+      }
+    })
+    variations.push({...variation.dataValues, variation_options});
+  }
+
+  return res
+    .status(200)
+    .json({ ...product.dataValues, product_details: combine, variations });
+};
 const getAll = async (req, res) => {
   // if (req.userRole == 1) {
   //   return res.status(401).json({ error: "you dont have permision" });
   // }
-  const getProduct = await Product.findAll({
-    include: Category,
-  });
-  const produt_detail = await Product_detail.findAll({
-    productId: getProduct?.map((item) => item.id),
-  });
-  const productDetail_VariationOption =
-    await ProductDetail_VariationOption.findAll({
-      productDetailId: produt_detail?.map((item) => item.id),
-    });
-  const variation_option = await Variation_option.findAll(
-    {
-      include: Variation,
-    },
-    {
-      id: productDetail_VariationOption?.map((item) => item.variationOptionId),
-    }
-  );
-  const combineVariation = productDetail_VariationOption.map((item) => {
-    return {
-      ...item.dataValues,
-      variation_option: variation_option.filter(
-        (i) => i.id === item.variationOptionId
-      ),
-    };
-  });
-  const combineProductDetail = produt_detail.map((item) => {
-    return {
-      ...item.dataValues,
-      productDetail_VariationOption: combineVariation.filter(
-        (i) => i.productDetailId === item.id
-      ),
-    };
-  });
-
-  const combine = getProduct.map((item) => {
-    return {
-      ...item.dataValues,
-      product_detail: combineProductDetail.filter(
-        (i) => i.productId === item.id
-      ),
-    };
-  });
-  return res.status(201).json([...combine]);
+  const products = await Product.findAll();
+  const productIds = products?.map(item => item.id);
+  const result = [];
+  for(const productId of productIds) {
+    const product = await getProduct(productId);
+    result.push(product);
+  }  
+  res.status(200).json(result);
 };
+// const getAll = async (req, res) => {
+//   // if (req.userRole == 1) {
+//   //   return res.status(401).json({ error: "you dont have permision" });
+//   // }
+//   const getProduct = await Product.findAll({
+//     include: Category,
+//   });
+//   const produt_detail = await Product_detail.findAll({
+//     productId: getProduct?.map((item) => item.id),
+//   });
+//   const productDetail_VariationOption =
+//     await ProductDetail_VariationOption.findAll({
+//       productDetailId: produt_detail?.map((item) => item.id),
+//     });
+//   const variation_option = await Variation_option.findAll(
+//     {
+//       include: Variation,
+//     },
+//     {
+//       id: productDetail_VariationOption?.map((item) => item.variationOptionId),
+//     }
+//   );
+//   const combineVariation = productDetail_VariationOption.map((item) => {
+//     return {
+//       ...item.dataValues,
+//       variation_option: variation_option.filter(
+//         (i) => i.id === item.variationOptionId
+//       ),
+//     };
+//   });
+//   const combineProductDetail = produt_detail.map((item) => {
+//     return {
+//       ...item.dataValues,
+//       productDetail_VariationOption: combineVariation.filter(
+//         (i) => i.productDetailId === item.id
+//       ),
+//     };
+//   });
+
+//   const combine = getProduct.map((item) => {
+//     return {
+//       ...item.dataValues,
+//       product_detail: combineProductDetail.filter(
+//         (i) => i.productId === item.id
+//       ),
+//     };
+//   });
+//   return res.status(201).json([...combine]);
+// };
 
 // ------------------------SELLER---------------------------//
 
@@ -85,7 +242,6 @@ const getProductByStoreId = async (req, res) => {
   });
   return res.status(200).json(products);
 };
-
 
 // -> Create new product (POST)
 const createProduct = async (req, res) => {
@@ -163,7 +319,7 @@ const createProductNotVariation = async (req, res) => {
   console.log(basic_info);
   const cate = await Category.findOne({
     where: {
-      category_name: basic_info.category
+      category_name: basic_info.category,
     },
   });
 
@@ -215,7 +371,7 @@ const createProductVariation = async (req, res) => {
 
   const cate = await Category.findOne({
     where: {
-      category_name: basic_info.category
+      category_name: basic_info.category,
     },
   });
 
@@ -251,7 +407,7 @@ const createProductVariation = async (req, res) => {
         console.log(variation_option.id);
       }
     }
-    
+
     console.log(variationIds);
     for (const model of models) {
       let ids = [];
@@ -295,9 +451,10 @@ const createProductVariation = async (req, res) => {
   //     })
   //   })
   // })
- 
 
-  return res.status(201).json({ message: "Product variations created successfully" });
+  return res
+    .status(201)
+    .json({ message: "Product variations created successfully" });
 };
 // -> Update product (PUT)
 const updateProduct = async (req, res) => {
@@ -370,20 +527,20 @@ const getAllProductOfStore = async (req, res) => {
 };
 
 // -> Get product by id product
-const getProductById = async (req, res) => {
-  const { productId } = req.body;
-  const getProductById = await Product.findOne({
-    where: {
-      productId: productId,
-    },
-  })
-    .then((product) => {
-      res.status(200).send(product);
-    })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
-};
+// const getProductById = async (req, res) => {
+//   const { productId } = req.body;
+//   const getProductById = await Product.findOne({
+//     where: {
+//       productId: productId,
+//     },
+//   })
+//     .then((product) => {
+//       res.status(200).send(product);
+//     })
+//     .catch((err) => {
+//       res.status(500).send({ message: err.message });
+//     });
+// };
 
 //////////////////////////----XEM LẠI----//////////////////////////
 
@@ -481,4 +638,5 @@ module.exports = {
   getProductByStoreId,
   createProductVariation,
   createProductNotVariation,
+  getProductById,
 };

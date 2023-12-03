@@ -60,6 +60,14 @@ io.on("connection", (socket) => {
     likesCounts[room]++;
     io.to(room).emit('updateLikes', likesCounts[room]);
   })
+
+  socket.on("sendOrderProduct", (data) => {
+    console.log(data);
+    const {order, roomId} = data;
+    io.to(roomId).emit("orderProduct", order);
+    //io.emit("orderProduct", order);
+  })
+
   socket.on('disconnected', () => {
     console.log("Client disconnected");
   })

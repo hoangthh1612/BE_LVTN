@@ -10,6 +10,7 @@ productService.get("/", productController.getAll);
 
 // Tạo sản phẩm
 
+productService.get('/getProductById/:productId', productController.getProductById);
 
 productService.post("/add_item", [verifyToken], productController.createProductNotVariation);
 

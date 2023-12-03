@@ -9,6 +9,89 @@ const {
   Variation_option,
 } = require("../models");
 const sequelize = require("sequelize");
+
+const getVariationName = async (variationId) => {
+  const variation = await Variation.findOne({
+    where: {
+      id: variationId,
+    },
+  });
+  return variation.type_name;
+};
+
+const getProduct = async (productId) => {
+  const product = await Product.findOne({
+    where: {
+      id: productId,
+    },
+    include: Category,
+  });
+  const product_details = await Product_detail.findAll({
+    where: {
+      productId,
+    },
+  });
+  // const getProduct = {
+  //   ...product,
+  //   product_detail: product_details
+  // }
+  const productDetailIds = product_details?.map((item) => item.id);
+  const skus_variation_options = await ProductDetail_VariationOption.findAll({
+    where: {
+      productDetailId: productDetailIds,
+    },
+  });
+  const variation_options = await Variation_option.findAll({
+    where: {
+      id: skus_variation_options?.map((item) => item.variationOptionId),
+    },
+  });
+  let add_variations = [];
+  for (const item of variation_options) {
+    let name = await getVariationName(item.variationId);
+    add_variations.push({ ...item.dataValues, variation_name: name });
+  }
+  console.log(add_variations);
+  const combineVariation = skus_variation_options?.map((item) => {
+    let result = {};
+    for (const i of add_variations) {
+      if (i.id === item.variationOptionId) {
+        result = i;
+      }
+    }
+    return { ...item.dataValues, variation_options: result };
+  });
+  const combine = product_details?.map((item) => {
+    let result = [];
+    for (const i of combineVariation) {
+      if (i.productDetailId === item.id) {
+        result.push({ ...i });
+      }
+    }
+    return {
+      ...item.dataValues,
+      skus_variation_options: result,
+    };
+  });
+  const variationIds = combine[0].skus_variation_options?.map(item => item.variation_options.variationId);
+  
+  let variations = [];
+  for(const id of variationIds) {
+    const variation = await Variation.findByPk(id);
+    const variation_options = await Variation_option.findAll({
+      where: {
+        variationId: id
+      }
+    })
+    variations.push({...variation.dataValues, variation_options});
+  }
+
+  return { ...product.dataValues, product_details: combine, variations };
+};
+
+
+
+
 const createLivestream = async (req, res) => {
   const { title, thumbnail, description, roomId, storeId, products } = req.body;
   try {
@@ -116,14 +199,12 @@ const getProductsByLivestremId = async (req, res) => {
       },
     });
     const productIds = livestreamProduct.map((item) => item.productId);
-    const products = await Product.findAll({
-      where: {
-        id: productIds,
-      },
-      include: Category,
-    });
-    const combine = await getProductDetail(products);
-    res.status(200).json([...combine]);
+    const result = [];
+  for(const productId of productIds) {
+    const product = await getProduct(productId);
+    result.push(product);
+  }  
+  res.status(200).json(result);
   } catch (error) {
     res.status(404).json({ message: "Not Found" });
   }
