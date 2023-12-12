@@ -53,4 +53,45 @@ const getStoreByUsername = async (req, res) => {
     }
 }
 
-module.exports = {create, getStoreByUsername}
+const getStoreById = async (req, res) => {
+    const {storeId} = req.params;
+    const store = await Store.findOne({
+        where: {
+            id: storeId
+        }
+    })
+    return res.status(200).json(store);
+} 
+
+const updateStore = async (req, res) => {
+    const {shop_name, description, avatar} = req.body;
+    const user = await User.findOne({
+        where: {
+            username: req.username
+        }
+    })
+    if(!user) {
+        res.status(401).json({
+            message: "Unauthorizated"
+        })
+    }
+    //console.log(user.id);
+    try {
+        const store = await Store.findOne({
+            where: {
+                userId: user.id
+            }
+        })
+        store.shop_name = shop_name;
+        store.description = description;
+        store.avatar = avatar;
+        await store.save();
+
+        return res.status(204).json({message: "Update store successfully"})
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+module.exports = {create, getStoreByUsername, getStoreById, updateStore}

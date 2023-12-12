@@ -210,8 +210,22 @@ const getProductsByLivestremId = async (req, res) => {
   }
 };
 
+// get Livestream in live
+
+const getLivestream = async (req, res) => {
+  const {roomId} = req.params;
+  const livestream = await Livestream.findOne({
+    where: {
+      roomId,
+      inLive: true
+    }
+  })
+  return res.status(200).json(livestream);
+}
+
 module.exports = {
   createLivestream,
   updateEndStream,
   getProductsByLivestremId,
+  getLivestream
 };

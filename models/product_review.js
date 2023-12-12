@@ -38,7 +38,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.FLOAT
         },
         review_date: {
-            type: DataTypes.DATE
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW
+            
         },
 
     },

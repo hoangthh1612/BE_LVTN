@@ -44,11 +44,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      creatAtDate: {
+      createdAt: {
         type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
       },
       statusRead: {
         type: DataTypes.BOOLEAN,
+        defaultValue: false
       }
 
     //   orderId: {

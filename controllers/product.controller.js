@@ -27,7 +27,14 @@ const getProduct = async (productId) => {
     where: {
       id: productId,
     },
-    include: Category,
+    include: [
+      {
+        model: Category
+      },
+      {
+        model: Store
+      }
+    ]
   });
   const product_details = await Product_detail.findAll({
     where: {
@@ -76,86 +83,37 @@ const getProduct = async (productId) => {
       skus_variation_options: result,
     };
   });
-  return { ...product.dataValues, product_details: combine };
+  const variationIds = combine[0]?.skus_variation_options?.map(item => item.variation_options.variationId) || [];
+    // const variations = await Variation.findAll({
+    //   where: {
+    //     id: variationIds
+    //   }
+    // })
+    let variations = [];
+    for(const id of variationIds) {
+      const variation = await Variation.findByPk(id);
+      const variation_options = await Variation_option.findAll({
+        where: {
+          variationId: id
+        }
+      })
+      variations.push({...variation.dataValues, variation_options});
+    }
+  return { ...product.dataValues, product_details: combine, variations };
 };
 
 
 
 const getProductById = async (req, res) => {
   const { productId } = req.params;
-  const product = await Product.findOne({
-    where: {
-      id: productId,
-    },
-    include: Category,
-  });
-  const product_details = await Product_detail.findAll({
-    where: {
-      productId,
-    },
-  });
-  // const getProduct = {
-  //   ...product,
-  //   product_detail: product_details
-  // }
-  const productDetailIds = product_details?.map((item) => item.id);
-  const skus_variation_options = await ProductDetail_VariationOption.findAll({
-    where: {
-      productDetailId: productDetailIds,
-    },
-  });
-  const variation_options = await Variation_option.findAll({
-    where: {
-      id: skus_variation_options?.map((item) => item.variationOptionId),
-    },
-  });
-  let add_variations = [];
-  for (const item of variation_options) {
-    let name = await getVariationName(item.variationId);
-    add_variations.push({ ...item.dataValues, variation_name: name });
+  
+  try {
+    const product = await getProduct(productId);  
+    return res.status(200).json(product);
   }
-  const combineVariation = skus_variation_options.map((item) => {
-    let result;
-    for (const i of add_variations) {
-      if (i.id === item.variationOptionId) {
-        result = i;
-      }
-    }
-    return { ...item.dataValues, variation_options: result };
-  });
-
-  const combine = product_details?.map((item) => {
-    let result = [];
-    for (const i of combineVariation) {
-      if (i.productDetailId === item.id) {
-        result.push({ ...i });
-      }
-    }
-    return {
-      ...item.dataValues,
-      skus_variation_options: result,
-    };
-  });
-  const variationIds = combine[0].skus_variation_options?.map(item => item.variation_options.variationId);
-  // const variations = await Variation.findAll({
-  //   where: {
-  //     id: variationIds
-  //   }
-  // })
-  let variations = [];
-  for(const id of variationIds) {
-    const variation = await Variation.findByPk(id);
-    const variation_options = await Variation_option.findAll({
-      where: {
-        variationId: id
-      }
-    })
-    variations.push({...variation.dataValues, variation_options});
+  catch (error) {
+    res.status(404).json({message: "Not Found"})
   }
-
-  return res
-    .status(200)
-    .json({ ...product.dataValues, product_details: combine, variations });
 };
 const getAll = async (req, res) => {
   // if (req.userRole == 1) {
@@ -170,77 +128,76 @@ const getAll = async (req, res) => {
   }  
   res.status(200).json(result);
 };
-// const getAll = async (req, res) => {
-//   // if (req.userRole == 1) {
-//   //   return res.status(401).json({ error: "you dont have permision" });
-//   // }
-//   const getProduct = await Product.findAll({
-//     include: Category,
-//   });
-//   const produt_detail = await Product_detail.findAll({
-//     productId: getProduct?.map((item) => item.id),
-//   });
-//   const productDetail_VariationOption =
-//     await ProductDetail_VariationOption.findAll({
-//       productDetailId: produt_detail?.map((item) => item.id),
-//     });
-//   const variation_option = await Variation_option.findAll(
-//     {
-//       include: Variation,
-//     },
-//     {
-//       id: productDetail_VariationOption?.map((item) => item.variationOptionId),
-//     }
-//   );
-//   const combineVariation = productDetail_VariationOption.map((item) => {
-//     return {
-//       ...item.dataValues,
-//       variation_option: variation_option.filter(
-//         (i) => i.id === item.variationOptionId
-//       ),
-//     };
-//   });
-//   const combineProductDetail = produt_detail.map((item) => {
-//     return {
-//       ...item.dataValues,
-//       productDetail_VariationOption: combineVariation.filter(
-//         (i) => i.productDetailId === item.id
-//       ),
-//     };
-//   });
-
-//   const combine = getProduct.map((item) => {
-//     return {
-//       ...item.dataValues,
-//       product_detail: combineProductDetail.filter(
-//         (i) => i.productId === item.id
-//       ),
-//     };
-//   });
-//   return res.status(201).json([...combine]);
-// };
 
 // ------------------------SELLER---------------------------//
 
 // get Product by storeid
 
+// const getProductByStoreId = async (req, res) => {
+//   const user = await User.findOne({
+//     where: {
+//       username: req.username,
+//     },
+//   });
+//   const store = await Store.findOne({
+//     where: {
+//       userId: user.id,
+//     },
+//   });
+//   const products = await Product.findAll({
+//     where: {
+//       storeId: store.id,
+//     },
+//   });
+//   return res.status(200).json(products);
+// };
 const getProductByStoreId = async (req, res) => {
+  const {storeId} = req.params;
+  try {
+    const products = await Product.findAll({
+      where: {
+        storeId,
+      },
+    });
+    const productIds = products?.map(item => item.id);
+    const result = [];
+    for(const productId of productIds) {
+      const product = await getProduct(productId);
+      result.push(product);
+    }  
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({message: "Store not existed"})
+  }
+};
+
+const getProductByStore = async (req, res) => {
   const user = await User.findOne({
     where: {
-      username: req.username,
-    },
-  });
+      username: req.username
+    }
+  })
   const store = await Store.findOne({
     where: {
-      userId: user.id,
-    },
-  });
-  const products = await Product.findAll({
-    where: {
-      storeId: store.id,
-    },
-  });
-  return res.status(200).json(products);
+      userId: user.id
+    }
+  })
+  try {
+    const products = await Product.findAll({
+      where: {
+        storeId: store.id,
+      },
+    });
+    const productIds = products?.map(item => item.id);
+    const result = [];
+    for(const productId of productIds) {
+      const product = await getProduct(productId);
+      result.push(product);
+    }  
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({message: "Store not existed"})
+  }
 };
 
 // -> Create new product (POST)
@@ -639,4 +596,5 @@ module.exports = {
   createProductVariation,
   createProductNotVariation,
   getProductById,
+  getProductByStore
 };

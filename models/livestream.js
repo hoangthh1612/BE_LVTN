@@ -39,6 +39,11 @@ module.exports = (sequelize, DataTypes) => {
       roomId: {
         type: DataTypes.STRING,
       },
+      nums_like: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+      }
+      ,
       inLive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true

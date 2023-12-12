@@ -1,4 +1,4 @@
-const { User, User_role, Role } = require("../models");
+const { User, User_role, Role, Cart, Store } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
@@ -28,7 +28,7 @@ const register = async (req, res) => {
       return res.status(401).json({ error: "Email already exists" });
     }
 
-    const user = await User.create({
+    const newUser = await User.create({
       username: username,
       password: hashedPassword,
       fullname: fullname,
@@ -37,8 +37,10 @@ const register = async (req, res) => {
       address: address,
       avatar: avatar,
     });
-    const user_role = await User_role.create({ userId: user.id, roleId: 1 });
-    res.json({ message: "Registration successful", user });
+    const user_role = await User_role.create({ userId: newUser.id, roleId: 1 });
+    await Cart.create({userId: newUser.id});
+
+    res.json({ message: "Registration successful", user: newUser });
   } catch (err) {
     res.status(500).json({ error: "Registration failed" });
   }
@@ -46,8 +48,8 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const foundUser = await User.findOne({ where: { username: username } });
+    const { password } = req.body;
+    const foundUser = await User.findOne({ where: { username: req.body.username } });
 
     if (!foundUser) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -61,14 +63,14 @@ const login = async (req, res) => {
     // Đăng nhập thành công, tạo token JWT kèm theo thông tin vai trò của người dùng
     const accessToken = jwt.sign(
       // { userId: foundUser._id, userRole: foundUser.role }, // Chú ý ở đây: foundUser.role chính là thông tin về vai trò của người dùng
-      { username: foundUser.username },
+      { username: foundUser.username, userId: foundUser.id },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "1h" }
     );
 
     const refreshToken = jwt.sign(
       // { userId: foundUser._id, userRole: foundUser.role }, // Chú ý ở đây: foundUser.role chính là thông tin về vai trò của người dùng
-      { username: foundUser.username },
+      { username: foundUser.username, userId: foundUser.id},
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "360h" }
     );
@@ -82,61 +84,38 @@ const login = async (req, res) => {
       secure: true,
       maxAge: 24 * 60 * 60 * 1000
     });
+    const store = await Store.findOne({
+      where: {
+        userId: foundUser.id
+      }
+    })
 
-    res.json({ accessToken });
+    const {username, id, fullname} = foundUser.dataValues;
+    res.json({message: "Login successfully", accessToken, user_info: {username, id, fullname, isSeller: store ? true : false}});
   } catch (err) {
     res.status(500).json({ error: "Login failed" });
   }
 };
 
-const loginSeller = async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const foundUser = await User.findOne({ where: { username: username } });
 
-    if (!foundUser) {
-      return res.status(401).json({ error: "Invalid credentials" });
+
+
+const getCookie = async (req, res) => {
+  const cookies = req.cookies;
+  console.log(cookies);
+  if(!cookies?.jwt) return res.sendStatus(204);
+  const refreshToken = cookies.jwt;
+  const foundUser = await User.findOne({
+    where: {
+      refreshToken
     }
-    const isPasswordValid = await bcrypt.compare(password, foundUser.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const user_role = await User_role.findOne({ where: { userId: foundUser.id } }); // SAI vì 1 người có thể có nhiều role
-    // Đăng nhập thành công, tạo token JWT kèm theo thông tin vai trò của người dùng
-    const accessToken = jwt.sign(
-      // { userId: foundUser._id, userRole: foundUser.role }, // Chú ý ở đây: foundUser.role chính là thông tin về vai trò của người dùng
-      { username: foundUser.username },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    const refreshToken = jwt.sign(
-      // { userId: foundUser._id, userRole: foundUser.role }, // Chú ý ở đây: foundUser.role chính là thông tin về vai trò của người dùng
-      { username: foundUser.username },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "360h" }
-    );
-    // Lưu thông tin user vào trong cookie
-    // Save in DB
-    foundUser.refreshToken = refreshToken;
-    await foundUser.save();
-    res.cookie('jwt', refreshToken, {
-      httpOnly: true,
-      sameSite: 'None', 
-      secure: true,
-      maxAge: 24 * 60 * 60 * 1000
-    });
-
-    res.json({ accessToken });
-  } catch (err) {
-    res.status(500).json({ error: "Login failed" });
-  }
-};
-
+  })
+  return res.status(200).json(foundUser);
+}
 
 const logout = async (req, res) => {
   const cookies = req.cookies;
+  console.log(cookies.jwt);
   if(!cookies?.jwt) return res.sendStatus(204);
   const refreshToken = cookies.jwt;
   const foundUser = await User.findOne({
@@ -201,4 +180,4 @@ const getListRoles = async (req, res) => {
 };
 
 
-module.exports = { register, login, getListRole, getListRoles, logout };
+module.exports = { register, login, getListRole, getListRoles, logout, getCookie };
