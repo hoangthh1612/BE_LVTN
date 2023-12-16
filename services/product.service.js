@@ -13,6 +13,7 @@ productService.post("/add_product_variation",[verifyToken], productController.cr
 productService.get('/getProductByStore', [verifyToken], productController.getProductByStore);
 
 productService.get("/getProductByStoreId/:storeId", productController.getProductByStoreId)
+productService.get("/getProductByCategoryId/:categoryId", productController.getProductByCategoryId);
 
 // Cập nhật sản phẩm
 productService.put("/update", getListRole, productController.updateProduct);

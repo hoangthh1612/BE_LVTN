@@ -25,12 +25,12 @@ module.exports = (sequelize, DataTypes) => {
       amount: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        validate: {
-          min: {
-            args: [[1]],
-            msg: "Value must be greater than 1",
-          },
-        },
+        // validate: {
+        //   min: {
+        //     args: [[1]],
+        //     msg: "Value must be greater than 1",
+        //   },
+        // },
       },
     },
     {

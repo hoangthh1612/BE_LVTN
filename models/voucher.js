@@ -17,16 +17,16 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "storeId",
       })
   
-    this.hasMany(Amount_discount, { 
+    this.hasOne(Amount_discount, { 
       foreignKey: "voucherId",
     });
-    this.hasMany(Percentage_discount, { 
+    this.hasOne(Percentage_discount, { 
       foreignKey: "voucherId",
      });
 
-     this.belongsTo(Category, {
-      foreignKey: "categoryId",
-     })
+    //  this.belongsTo(Category, {
+    //   foreignKey: "categoryId",
+    //  })
 
     }
   }
@@ -65,6 +65,10 @@ module.exports = (sequelize, DataTypes) => {
       minSpend: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      max_usage: {
+        type: DataTypes.INTEGER,
+        //allowNull: false,
       },
       quantity: DataTypes.INTEGER,
       used: {

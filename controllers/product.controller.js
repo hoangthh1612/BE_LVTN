@@ -200,6 +200,28 @@ const getProductByStore = async (req, res) => {
   }
 };
 
+const getProductByCategoryId = async (req, res) => {
+  const { categoryId } = req.params;
+  try {
+    const products = await Product.findAll({
+      where: {
+        categoryId: categoryId,
+        },
+      })
+      const productIds = products?.map(item => item.id);
+      const result = [];
+      for(const productId of productIds) {
+        const product = await getProduct(productId);
+        result.push(product);
+      }  
+      res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+/*----------------------------Create product ------------------------ */
 // -> Create new product (POST)
 const createProduct = async (req, res) => {
   const { product_name, description, brand, category } = req.body;
@@ -293,6 +315,7 @@ const createProductNotVariation = async (req, res) => {
     quantity: sales_info.quantity,
     productId: product.id,
   });
+
 
   return res.status(201).json({ message: "Product created successfully" });
 };
@@ -519,20 +542,7 @@ const getBestSellerProductOfStore = async (req, res) => {
 };
 
 // -> Get product by category
-const getProductByCategory = async (req, res) => {
-  const { categoryId } = req.body;
-  const getProductByCategory = await Product.findAll({
-    where: {
-      categoryId: categoryId,
-    },
-  })
-    .then((product) => {
-      res.status(200).send(product);
-    })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
-};
+
 
 // -> Get product by livestream
 
@@ -596,5 +606,6 @@ module.exports = {
   createProductVariation,
   createProductNotVariation,
   getProductById,
-  getProductByStore
+  getProductByStore,
+  getProductByCategoryId
 };

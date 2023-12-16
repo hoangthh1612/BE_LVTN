@@ -59,6 +59,11 @@ const createCartProduct = async (req, res) => {
                 userId: user.id
             }
         })
+        const productDetail = await Product_detail.findOne({
+            where: {
+                id: productDetailId
+            }
+        })
         const existedCartProduct = await Cart_product.findOne({
             where: {
                 cartId: cart.id,
@@ -69,6 +74,9 @@ const createCartProduct = async (req, res) => {
             existedCartProduct.quantity += quantity;
             await existedCartProduct.save();
             return res.status(201).json({message: "Add to cart successfully"});
+        }
+        if(quantity > productDetail.quantity) {
+            return res.status(401).json({message: "Don't enough products in store"})
         }
         const newCartProduct = await Cart_product.create({
             cartId: cart.id,
@@ -161,4 +169,37 @@ const removeProductFromCart = async (req, res) => {
     }
 }
 
-module.exports = {getCartProduct, createCartProduct, removeProductFromCart}
+const updateProductFromCart = async (req, res) => {
+    const {productDetailId} = req.params;
+    const {quantity} = req.body;
+    try {
+        const user = await User.findOne({
+            where: {
+                username: req.username
+            }
+        })
+        const cart = await Cart.findOne({
+            where: {
+                userId: user.id
+            }
+        })
+        const cartProduct = await Cart_product.findOne({
+            where: {
+                productDetailId,
+                cartId: cart.id 
+            }
+        })
+        if(!cartProduct) {
+            return res.status(404).json({message: "Not Found"})
+        }
+        cartProduct.quantity = quantity;
+        await cartProduct.save();
+        return res.status(204).json({message: "Update product from cart successfully"});
+    } catch (error) {
+        res.status(400).json({message: "Update fail"})
+    }
+}
+
+
+
+module.exports = {getCartProduct, createCartProduct, removeProductFromCart, updateProductFromCart}

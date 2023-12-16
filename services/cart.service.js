@@ -1,4 +1,4 @@
-const { getCartProduct, createCartProduct, removeProductFromCart } = require('../controllers/cart.controller');
+const { getCartProduct, createCartProduct, removeProductFromCart, updateProductFromCart } = require('../controllers/cart.controller');
 const { verifyToken } = require('../middleware/authMiddleware');
 
 const cartRoute = require('express').Router();
@@ -8,7 +8,7 @@ const cartRoute = require('express').Router();
 cartRoute.post('/create', [verifyToken], createCartProduct);
 cartRoute.get('/getCartByUserId',[verifyToken], getCartProduct);
 cartRoute.delete('/removeProductFromCart/:productDetailId',[verifyToken], removeProductFromCart);
-
+cartRoute.put('/updateProductFromCart/:productDetailId',[verifyToken], updateProductFromCart)
 
 
 module.exports = cartRoute;
