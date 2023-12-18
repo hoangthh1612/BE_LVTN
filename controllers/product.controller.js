@@ -402,6 +402,7 @@ const createProductVariation = async (req, res) => {
         productId: product.id,
         price: model.price,
         quantity: model.quantity,
+        image: model.image
       });
       ids.forEach(async (optionId, index) => {
         await ProductDetail_VariationOption.create({
@@ -476,18 +477,32 @@ const updateProduct = async (req, res) => {
 
 // -> Delete product  (DELETE)
 const deleteProduct = async (req, res) => {
-  const { product_name } = req.body;
-  const deleteProduct = await Product.destroy({
-    where: {
-      product_name: product_name,
-    },
-  })
-    .then((product) => {
-      res.status(200).send("deleted product successfully");
+  const {productId} = req.params;
+  try {
+    const user = await User.findOne({
+      where: {
+        username: req.username
+      }
     })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
+    const store = await Store.findOne({
+      where: {
+        userId: user.id
+      }
+    })
+    //const { product_name } = req.body;
+    const product = await Product.findOne({
+      where: {
+        id: productId,
+        storeId: store.id
+      },
+    })
+    await product.destroy();
+    res.status(204).json({message: "Delete product successfully"})
+  } catch (error) {
+    console.log(error);
+  }
+
+  
 };
 
 // -> Get all product of store
@@ -541,14 +556,8 @@ const getBestSellerProductOfStore = async (req, res) => {
     });
 };
 
-// -> Get product by category
+// delete Product
 
-
-// -> Get product by livestream
-
-// -> Get product recommendation
-
-// -> Get product by search
 
 // -------------------------------BUYER-----------------------------//
 

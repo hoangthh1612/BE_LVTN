@@ -48,6 +48,9 @@ const createVoucher = async (req, res) => {
       end_time,
       storeId: store.id,
     });
+    if(end_time <= start_time) {
+      return res.status(400).json({message: "End date cannot be earlier than start date"})
+    }
     if (type === "amount") {
       console.log("amount....");
       await Amount_discount.create({

@@ -19,7 +19,7 @@ productService.get("/getProductByCategoryId/:categoryId", productController.getP
 productService.put("/update", getListRole, productController.updateProduct);
 
 // Xóa sản phẩm
-productService.delete("/delete", getListRole, productController.deleteProduct);
+productService.delete("/delete/:productId", [verifyToken], productController.deleteProduct);
 
 // productService.get("/bestbook", productController.getBestBook);
 
