@@ -19,9 +19,9 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(Product, {
         foreignKey: "categoryId"
       })
-      this.hasMany(Voucher, {
-        foreignKey: "categoryId",
-      })
+      // this.hasMany(Voucher, {
+      //   foreignKey: "categoryId",
+      // })
     }
   }
   Category.init(

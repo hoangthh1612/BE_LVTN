@@ -20,6 +20,7 @@ const verifyToken = (req, res, next) => {
     (err, decoded) => {
       if(err) return res.sendStatus(403);
       req.username = decoded.username;
+      req.userId = decoded.id;
       next();
     }
   )

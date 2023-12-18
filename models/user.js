@@ -16,9 +16,15 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: "userId",
         })
      
+        // Follow
         this.hasMany(Follow,{
             foreignKey: "userId",
         })
+        this.belongsToMany(Store, {
+            through: Follow,
+            foreignKey: "userId"
+          })
+        //
 
         this.hasOne(Cart, {
             foreignKey: "userId",

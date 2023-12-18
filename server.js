@@ -6,7 +6,7 @@ const app = express();
 const db = require('./models');
 const http = require('http');
 const {Server} = require('socket.io');
-
+const {Livestream} = require('./models');
 const server = http.createServer(app);
 //const corsConfig = require('./config/cors.config');
 const corsOptions = require('./config/cors.config');
@@ -41,24 +41,39 @@ const io = new Server(server, {
 
 
 const likesCounts = {};
-io.on("connection", (socket) => { 
-  //console.log(socket.id);
-  // socket.on("create-room", (data) => {
-  //   console.log(data);
-  //   socket.broadcast.emit("send-room", data);
-  // })
-  socket.on("join-room", (room) => {
-    socket.join(room);
-    if(!likesCounts[room]) {
-      likesCounts[room] = 0;
+const userToSocketMapping = new Map();
+
+const getLikesByRoom = async (roomId) => {
+  const livestream = await Livestream.findOne({
+    where: {
+      roomId,
+      inLive: true
     }
-    console.log("roomId", room);
-    io.to(room).emit('updateLikes', likesCounts[room]);
+  })
+  return livestream;
+}
+
+io.on("connection", (socket) => { 
+  
+  socket.on("join-room", async (data) => {
+    const {roomId, username} = data;
+    socket.join(roomId);
+    // if(!likesCounts[room]) {
+    //   likesCounts[room] = 0;
+    // }
+    console.log(data);
+    // io.to(room).emit('updateLikes', likesCounts[room]);
+    // io.to(room).emit('orderProduct', order);
+    
     //io.emit('updateLikes', likesCounts[room]);
   })
-  socket.on('like', (room) => {
-    likesCounts[room]++;
-    io.to(room).emit('updateLikes', likesCounts[room]);
+  socket.on('like', async (data) => {
+    const {roomId, username} = data;
+    const livestream = await getLikesByRoom(roomId);
+    livestream.nums_like += 1;
+    await livestream.save();
+
+    io.to(roomId).emit('updateLikes', livestream.nums_like);
   })
 
   socket.on("sendOrderProduct", (data) => {
@@ -73,7 +88,7 @@ io.on("connection", (socket) => {
   })
 })
 console.log(likesCounts);
-db.sequelize.sync({ force: false }).then(() => {
+db.sequelize.sync({ alter: false }).then(() => {
   //insertData.initial();
 });
 // app.use(cors(corsConfig));
@@ -88,25 +103,26 @@ const storeService = require('./services/store.service');
 const orderRoute = require('./services/order.service');
 const livestreamRoute = require('./services/livestream.service');
 const categoryRoute = require('./services/category.service');
+const cartRoute = require('./services/cart.service');
+const productReviewRoute = require('./services/product_review.service');
+const followRoute = require('./services/follow.service');
+const notiRoute = require('./services/notification.service');
 
 
 //const {verifyToken} = require('./middleware/authMiddleware');
 app.use('/apis/auth', authService);
 app.use('/apis/user', userService);
 app.use('/apis/refresh', refreshService);
-
 app.use('/apis/store', storeService);
 app.use('/apis/product', productService);
 app.use('/apis/category', categoryRoute);
-// app.use('/apis/account', accountService);
-// app.use('/apis/order', orderService);
-// app.use('/apis/address', addressService);
-// app.use('/apis/livestream', livestreamService);
-// app.use('/apis/login', loginService);
-// app.use('/apis/notification', notificationService);
 app.use('/apis/voucher', voucherService);
 app.use('/apis/order', orderRoute);
 app.use('/apis/livestream', livestreamRoute);
+app.use('/apis/cart', cartRoute);
+app.use('/apis/product-review', productReviewRoute);
+app.use('/apis/follow', followRoute);
+app.use('/apis/notification', notiRoute);
   
 
 

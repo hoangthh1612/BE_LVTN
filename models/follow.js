@@ -28,20 +28,22 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         allowNull: false,
       },
-    
-      
     },
     
-    {
-        
+    {   
         sequelize,
-        indexes:[
-          {
-            unique: true,
-            fields:['storeId', 'userId'],
-          }
-         ],
-        timestamps: false,
+        // indexes:[
+        //   {
+        //     unique: true,
+        //     fields:['storeId', 'userId'],
+        //   }
+        //  ],
+        timestamps: false, 
+        // paranoid: true,
+
+        //  If you want to give a custom name to the deletedAt column
+        // deletedAt: 'destroyTime',
+        
         modelName: "Follow",
         tableName: "follow",
        

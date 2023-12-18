@@ -20,11 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       // this.belongsTo(Cart,{
       //   foreignKey: "cartId"
       // });
-      this.belongsToMany(Cart,{
-        through: Cart_product,
-        foreignKey: "productId",
-    })
-
     this.hasMany(Product_review, {
       foreignKey: "productId",
     })

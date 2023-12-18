@@ -27,11 +27,15 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(Follow,{
           foreignKey: "storeId",
       })
+      this.belongsToMany(User, {
+        through: Follow,
+        foreignKey: "storeId"
+      })
 
       this.hasMany(Voucher,{
         foreignKey: "storeId",
       })
-
+      
       this.hasMany(Livestream, {
         foreignKey: "storeId",
       })

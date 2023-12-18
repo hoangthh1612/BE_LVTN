@@ -13,11 +13,11 @@ module.exports = (sequelize, DataTypes) => {
         //     through: "follow",
         //     foreignKey: "userId",
         // })
-        this.belongsTo(Order,{
+        this.belongsTo(Order, {
             foreignKey: "orderId",
         })
         this.belongsTo(Product_detail,{
-            foreignKey: "product_detailId",
+            foreignKey: "productDetailId",
         })
     }
   }
