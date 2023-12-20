@@ -490,13 +490,19 @@ const deleteProduct = async (req, res) => {
       }
     })
     //const { product_name } = req.body;
-    const product = await Product.findOne({
+    // const product = await Product.findOne({
+    //   where: {
+    //     id: productId,
+    //     storeId: store.id
+    //   },
+    // })
+    await Product.destroy({
       where: {
         id: productId,
         storeId: store.id
       },
     })
-    await product.destroy();
+    //await product.destroy();
     res.status(204).json({message: "Delete product successfully"})
   } catch (error) {
     console.log(error);

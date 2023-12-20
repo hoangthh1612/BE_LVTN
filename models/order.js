@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
         through: Order_voucher,
         foreignKey: "orderId",
       });
+      this.hasMany(Order_voucher, {
+        foreignKey: "orderId"
+      })
+
       // sửa lại
       //     this.belongsToMany(Product, {
       //      through: Order_detail,
@@ -32,6 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsToMany(Product_detail, {
         through: Order_detail,
         foreignKey: "orderId",
+        onDelete: "CASCADE"
       });
       this.hasMany(Order_detail, {
         foreignKey: "orderId"

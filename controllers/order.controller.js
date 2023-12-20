@@ -7,7 +7,10 @@ const {
   Variation_option,
   ProductDetail_VariationOption,
   Product,
-  Store
+  Store,
+  Order_voucher,
+  Cart,
+  Cart_product
 } = require("../models");
 
 const getVariationName = async (variationId) => {
@@ -58,10 +61,15 @@ const getProductDetail = async (id) => {
 
 const getAll = async (req, res) => {
   try {
-    const orders = await Order.findAll();
-    const order_details = await Order_detail.findAll({
-      id: orders,
+    const orders = await Order.findAll({
+      include: [{
+        model: Order_detail
+      },
+      {
+        model: Order_voucher
+      }]
     });
+    
     return res.status(200).json(orders);
   } catch (err) {
     console.log(err);
@@ -133,40 +141,80 @@ const createOrder = async (req, res) => {
       username: req.username,
     },
   });
+  const cart = await Cart.findOne({
+    where: {
+      userId: user.id
+    }
+  })
  
   const {
-    order_detail,
+    order_store,
     total_price,
     shipping_address,
     order_status,
     payment_method,
     fullname,
     phone,
+    voucher_info,
+    storeId
   } = req.body;
-  for (const data of order_detail) {
-    let order_sn = `${user.id}${data.storeId}` + `${Date.now().toString()}`;
-    const newOrder = await Order.create({   
-      order_sn: `${order_sn}`,
-      total_price: data.total_price,
-      shipping_address,
-      payment_method: "cash",
-      userId: user.id,
-      fullname,
-      phone,
-    });
-    let result = [];
-    for (const item of data.order_store) {
-      const newOrderDetail = await Order_detail.create({
-        orderId: newOrder.id,
-        productDetailId: item.productDetailId,
-        quantity: item.quantity,
-      });
-      const update = await updateQuantity(item.productDetailId, item.quantity);
-      console.log(update);
-      await update.save();
-      result.push(newOrderDetail);
+  let order_sn = `${user.id}${storeId}` + `${Date.now().toString()}`;
+  const {orderTotal, voucherId} = voucher_info;
+  const newOrder = await Order.create({
+    order_sn,
+    fullname,
+    phone,
+    shipping_address,
+    payment_method: "cash",
+    userId: user.id,
+    total_price: orderTotal
+  })  
+  if(voucherId) {
+    const newVoucher = await Order_voucher.create({
+      voucherId,
+      orderId: newOrder.id
+    })
+  }
+  for(const item of order_store) {
+    await Order_detail.create({
+      orderId: newOrder.id,
+      productDetailId: item.productDetailId,
+      quantity: item.quantity
+    })
+    if(item.cartId) {
+      await Cart_product.destroy({
+        where: {
+          cartId: cart.id,
+          productDetailId: item.productDetailId
+        }
+      })
     }
   }
+
+  // for (const data of order_detail) {
+  //   let order_sn = `${user.id}${data.storeId}` + `${Date.now().toString()}`;
+  //   const newOrder = await Order.create({   
+  //     order_sn: `${order_sn}`,
+  //     total_price: data.total_price,
+  //     shipping_address,
+  //     payment_method: "cash",
+  //     userId: user.id,
+  //     fullname,
+  //     phone,
+  //   });
+  //   let result = [];
+  //   for (const item of data.order_store) {
+  //     const newOrderDetail = await Order_detail.create({
+  //       orderId: newOrder.id,
+  //       productDetailId: item.productDetailId,
+  //       quantity: item.quantity,
+  //     });
+  //     const update = await updateQuantity(item.productDetailId, item.quantity);
+  //     console.log(update);
+  //     await update.save();
+  //     result.push(newOrderDetail);
+  //   }
+  // }
   return res.status(201).json({
     message: "Create Order successfully",
     // order: {
@@ -175,12 +223,6 @@ const createOrder = async (req, res) => {
     // }
   });
 };
-// const getOrdersFilterBy = async (req, res) => {
-
-//     const orders = await Order.getAll({
-
-//     })
-// }
 
 const getOrderByOrderSn = async (req, res) => {
   const {orderSn} = req.params;
@@ -320,7 +362,7 @@ const getOrderByStoreId = async (req, res) => {
     // })
   
     const filterOrders = result?.filter((item) => {
-      if(item.Order_details[0].product_detail.Product.storeId === store.id) {
+      if(item?.Order_details[0]?.product_detail?.Product?.storeId === store.id) {
         return true;
       }
       return false;

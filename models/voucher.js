@@ -13,6 +13,9 @@ module.exports = (sequelize, DataTypes) => {
         through: Order_voucher,
         foreignKey: "voucherId",
     })
+    this.hasMany(Order_voucher, {
+      foreignKey: "voucherId"
+    })
       this.belongsTo(Store,{
         foreignKey: "storeId",
       })
