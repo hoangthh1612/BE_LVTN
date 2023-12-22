@@ -11,29 +11,34 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
 
       
+      // this.belongsTo(Product, {
+      //   foreignKey: "productId",
+      // })
       this.belongsTo(Product, {
         foreignKey: "productId",
       })
-   
-
       // this.belongsTo(Variation_option, {
       //   foreignKey: "variation_optionId",
       // })
       this.belongsToMany(Cart, {
         through: Cart_product,
         foreignKey: "productDetailId",
+        onDelete: "CASCADE"
       })
       this.hasMany(Cart_product, {
-        foreignKey: "productDetailId"
+        foreignKey: "productDetailId",
+        
       });
 
       /*order_detail (order + product_detail)*/
       this.belongsToMany(Order, {
         through: Order_detail,
         foreignKey: "productDetailId",
+        onDelete: "CASCADE"
       })
       this.hasMany(Order_detail, {
-        foreignKey: "productDetailId"
+        foreignKey: "productDetailId",
+        
       })
       /*end*/
       this.hasMany(ProductDetail_VariationOption, {

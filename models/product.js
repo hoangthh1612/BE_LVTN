@@ -39,6 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     // })
     this.hasMany(Product_detail, {
       foreignKey: "productId",
+      onDelete: 'CASCADE'
     })
     
     // Không có

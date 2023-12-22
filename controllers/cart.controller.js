@@ -30,10 +30,10 @@ const getProductDetail = async (id) => {
     });
     let add_variations = [];
     for (const item of variation_options) {
-    let name = await getVariationName(item.variationId);
+    let name = await getVariationName(item?.variationId);
     add_variations.push({ ...item.dataValues, variation_name: name });
     }
-    const combineVariation = skus_variation_options.map((item) => {
+    const combineVariation = skus_variation_options?.map((item) => {
     let result;
     for (const i of add_variations) {
         if (i.id === item.variationOptionId) {
@@ -93,7 +93,6 @@ const createCartProduct = async (req, res) => {
 
 
 const getCartProduct = async (req, res) => {
-    console.log(req);
     try {
         const user = await User.findOne({
             where: {
@@ -117,12 +116,12 @@ const getCartProduct = async (req, res) => {
                 
             // }
         })
-        const productDetailIds = cartProducts?.map((item) => item.productDetailId);
+        const productDetailIds = cartProducts?.map((item) => item?.productDetailId);
         console.log(productDetailIds);
         
         let result = [];
         for(const item of cartProducts) {
-            const productDetail = await getProductDetail(item.productDetailId);
+            const productDetail = await getProductDetail(item?.productDetailId);
             result.push({
                 ...item.dataValues,
                 product_detail: productDetail
