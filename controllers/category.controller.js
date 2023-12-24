@@ -41,6 +41,21 @@ const getCategoryOfStore = async (req, res) => {
     }
 }
 
+const getCategoryByCategoryName = async (req, res) => {
+    try {
+        const {categoryName} = req.query;
+        const category = await Category.findOne({
+            where: {
+                category_name: categoryName
+            }
+        })
+        res.status(200).json(category);
+
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 
-module.exports = { getAllCategories, getCategoryOfStore };
+
+module.exports = { getAllCategories, getCategoryOfStore, getCategoryByCategoryName };

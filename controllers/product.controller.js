@@ -11,6 +11,7 @@ const {
   ProductDetail_VariationOption,
   Variation,
   Store,
+  Order_detail
 } = require("../models");
 
 const getVariationName = async (variationId) => {
@@ -245,6 +246,43 @@ const getProductByCategoryId = async (req, res) => {
   }
 };
 
+// get Top product best seller
+
+const getProductBestSeller = async (req, res) => {
+  try {
+    const orderDetails = await Order_detail.findAll({
+      include: Product_detail
+    });
+    const result = {};
+    orderDetails.forEach((item) => {
+      const {productDetailId, quantity, Product_detail} = item;
+      const {productId} = Product_detail;
+      if(result[productId]) {
+        result[productId] += quantity;
+      }  
+      else {
+        result[productId] = quantity;
+      }
+    })
+    const resultArr = Object.keys(result).map(productId => ({productId: parseInt(productId), quantity: result[productId]}));
+    const sortResult = resultArr.sort((a, b) => b.quantity - a.quantity);
+    const ids = sortResult?.map((item) => item.productId);
+    const productIds = ids.length > 10 ? ids.slice(0, 10) : ids;
+    const products = [];
+    for(const productId of productIds) {
+      const product = await getProduct(productId);
+      products.push(product);
+    }  
+    res.status(200).json(products);
+  }
+  catch(err) {
+    res.status(400).json({message: "Error"})
+  }
+
+  //res.status(200).json(productIds);
+}
+
+
 
 /*----------------------------Create product ------------------------ */
 // -> Create new product (POST)
@@ -463,42 +501,103 @@ const createProductVariation = async (req, res) => {
     .json({ message: "Product variations created successfully" });
 };
 // -> Update product (PUT)
-const updateProduct = async (req, res) => {
-  const {
-    product_name,
-    description,
-    brand,
-    discount_value,
-    image,
-    inLivestream,
-    categoryId,
-    storeId,
-  } = req.body;
 
-  const updateProduct = await Product.update(
-    {
-      product_name: product_name,
-      description: description,
-      brand: brand,
-      discount_value: discount_value,
-      image: image,
-      inLivestream: inLivestream,
-      categoryId: categoryId,
-      storeId: storeId,
-    },
-    {
+const updateProductBasicInfo = async (req, res) => {
+  const {productId} = req.params;
+  const {image, product_name, description} = req.body;
+
+  try {
+    const updateProduct = await Product.findOne({
       where: {
-        product_name: product_name,
-      },
-    }
-  )
-    .then((product) => {
-      res.status(200).send("updated product successfully");
+        id: productId
+      }
     })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
+    await updateProduct.update({image, product_name, description});
+    return res.status(204).json({message: "Update product successfully"})
+  } catch (error) {
+  console.log(error);    
+  }
+}
+
+// update Product detail 
+const updateProductDetail = async (req, res) => {
+    const {productDetailId, image, quantity, price} = req.body;
+    try {
+      const productDetail = await Product_detail.findOne({
+        where: {
+          id: productDetailId
+        }
+      })
+      await productDetail.update({image, quantity, price});
+      return res.status(204).json("Update Product detail successfully");
+    } catch (error) {
+      
+    }
+} 
+
+// create product detail from Product existed
+
+const updateAndCreateProductVariation = async (req, res) => {
+  const { productId, variations, models } = req.body;
+
+  try {
+    let optionList = [];
+    for (const variation of variations) {
+      for (const option of variation.option_list) {
+        if (option.optionId === 0) {
+          const newOption = await Variation_option.create({
+            variationId: variation.variationId,
+            type_value: option.option_value,
+          });
+          optionList.push({
+            id: newOption.id,
+            option_value: newOption.type_value,
+          });
+        } else {
+          const updateOption = await Variation_option.findOne({
+            where: {
+              id: option.optionId,
+            },
+          });
+          await updateOption.update({ type_value: option.option_value });
+          optionList.push({
+            id: option.optionId,
+            option_value: option.option_value,
+          });
+        }
+      }
+    }
+    for (const model of models) {
+      let ids = [];
+      model.tier_name?.forEach((name) => {
+        const variation_option = optionList.find(
+          (option) => name === option.option_value
+        );
+        ids.push(variation_option?.id);
+      });
+      console.log(ids);
+      const sku = await Product_detail.create({
+        productId,
+        price: model.price,
+        quantity: model.quantity,
+        image: model.image,
+      });
+      for (const id of ids) {
+        await ProductDetail_VariationOption.create({
+          productDetailId: sku.id,
+          variationOptionId: id,
+        });
+      }
+    }
+
+    return res
+      .status(201)
+      .json({ message: "Update and Create product variation successfully" });
+  } catch (error) {
+    console.log(error);
+  }
 };
+
 
 // -> Delete product  (DELETE)
 const deleteProduct = async (req, res) => {
@@ -536,37 +635,6 @@ const deleteProduct = async (req, res) => {
   
 };
 
-// -> Get all product of store
-const getAllProductOfStore = async (req, res) => {
-  const { storeId } = req.body;
-  const getAllProductOfStore = await Product.findAll({
-    where: {
-      storeId: storeId,
-    },
-  })
-    .then((product) => {
-      res.status(200).send(product);
-    })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
-};
-
-// -> Get product by id product
-// const getProductById = async (req, res) => {
-//   const { productId } = req.body;
-//   const getProductById = await Product.findOne({
-//     where: {
-//       productId: productId,
-//     },
-//   })
-//     .then((product) => {
-//       res.status(200).send(product);
-//     })
-//     .catch((err) => {
-//       res.status(500).send({ message: err.message });
-//     });
-// };
 
 //////////////////////////----XEM LẠI----//////////////////////////
 
@@ -592,55 +660,10 @@ const getBestSellerProductOfStore = async (req, res) => {
 
 // -------------------------------BUYER-----------------------------//
 
-// -> Get all product
-
-const getAllProduct = async (req, res) => {
-  const getAllProduct = await Product.findAll();
-  return res.status(201).json(getAllProduct);
-};
-
-// -> Get product by id product
-// const getProductById = async (req, res) => {
-//   const { productId } = req.body;
-//   const getProductById = await Product.findOne({
-//     where: {
-//       productId: productId,
-//     },
-//   })
-//   .then((product) => {
-//     res.status(200).send(product);
-//   })
-//   .catch((err) => {
-//     res.status(500).send({ message: err.message });
-//   });
-// };
-
-// -> Get best seller product
-
-// -> Get product by category
-
-// -> Get product by livestream
-
-// -> Get product recommendation
-
-// -> Get product by search
-
-// -> Create review product (POST)
-
-// -> Update review product (PUT)
-
-// -> Delete review product (DELETE)
-
-// -> Get review product by id product
-
-// -> Get review product by id review
-
-// -> Get review product by id account
 
 module.exports = {
   getAll,
   createProduct,
-  updateProduct,
   deleteProduct,
   getProductByStoreId,
   createProductVariation,
@@ -648,5 +671,9 @@ module.exports = {
   getProductById,
   getProductByStore,
   getProductByCategoryId,
-  getProductByIdSocket
+  getProductByIdSocket,
+  updateProductBasicInfo,
+  updateProductDetail,
+  updateAndCreateProductVariation,
+  getProductBestSeller
 };

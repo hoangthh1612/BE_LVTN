@@ -11,6 +11,9 @@ const { User, User_role, Store } = require('../models');
 // const constrants = require('../constrants');
 // const { login } = require('./auth.controller');
 
+const { User } = require('../models');
+
+
 const verifyAccount =  (req, res) => {
   res.send("Hello");
   // const account = await User.findOne({
@@ -90,10 +93,36 @@ const createSellerStore = async (req, res) => {
   }
 }
 
+const updateUserInfo = async (req, res) => {
+  const {avatar, fullname, phone_number, address} = req.body;
+  try {
+    const existedUser = await User.findOne({
+      where: {
+        username: req.username
+      }
+    })
+    if(!existedUser) {
+      return res.status(400).json({message: "Not found user"})
+    }
+    await existedUser.update({
+      avatar,
+      fullname,
+      phone_number,
+      address
+    })
+
+    res.status(204).json({message: "Update user successfully"});
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   verifyAccount,
   getUserByUsername,
   getUserAuthorization,
   createRoleSeller,
-  createSellerStore
+  createSellerStore,
+  updateUserInfo
 };

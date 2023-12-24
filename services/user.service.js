@@ -1,5 +1,6 @@
 const userService = require('express').Router();
 const { getUserByUsername, getUserAuthorization, createRoleSeller, createSellerStore } = require('../controllers/user.controller');
+const { getUserByUsername, getUserAuthorization, updateUserInfo } = require('../controllers/user.controller');
 //const userController = require('../controllers/user.controller');
 const { verifyToken } = require('../middleware/authMiddleware');
 
@@ -11,6 +12,7 @@ userService.get('/verifyUser',[verifyToken], getUserAuthorization);
 
 userService.post('/createSellerRole', createRoleSeller);
 userService.post('/createSellerStore', createSellerStore);
+userService.put("/updateUser", [verifyToken], updateUserInfo);
 // Đăng ký tài khoản
 //userService.post('/signup', userController.postSignUp);
 
