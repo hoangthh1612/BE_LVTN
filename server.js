@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -15,9 +14,7 @@ const cookieParser = require('cookie-parser');
 const normalizePort = (port) => parseInt(port, 10);
 const PORT = normalizePort(process.env.PORT || 8000);
 const { DataTypes } = require("sequelize");
-
 const insertData = require('./data/insertData');
-
 app.use(credentials)
 //app.use(cors());
 app.use(cors(corsOptions));
@@ -25,7 +22,6 @@ app.use(cors(corsOptions));
 //app.use(cors({ origin: true, credentials: true }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-
 
 app.use(cookieParser());
 
@@ -35,7 +31,6 @@ const io = new Server(server, {
       credentials: true
     }
 });
-
 
 const getLikesByRoom = async (roomId) => {
   const livestream = await Livestream.findOne({
@@ -47,7 +42,6 @@ const getLikesByRoom = async (roomId) => {
   return livestream;
 }
 
- 
 db.sequelize.sync({ alter: false }).then(() => {
   // insertData.initial();
 });
@@ -68,7 +62,6 @@ const productReviewRoute = require('./services/product_review.service');
 const followRoute = require('./services/follow.service');
 const notiRoute = require('./services/notification.service');
 
-
 //const {verifyToken} = require('./middleware/authMiddleware');
 app.use('/apis/auth', authService);
 app.use('/apis/user', userService);
@@ -84,7 +77,6 @@ app.use('/apis/product-review', productReviewRoute);
 app.use('/apis/follow', followRoute);
 app.use('/apis/notification', notiRoute);
   
-
 const socketIO = require('./config/socket.io.config');
 socketIO.init(server);
 socketIO.getIO().on('connection', (socket) => {
@@ -103,6 +95,35 @@ socketIO.getIO().on('connection', (socket) => {
     console.log("co thang mua hang kia ae");
     socketIO.getIO().emit('foo', "tao da xac nhan roi nha maiiiiiiiiiii");
     console.log(e);
+  })
+
+  // gửi sản phẩm product_detail vào đây
+  socket.on('livestream', (e)=>{
+    console.log("co thang vo livestream kia anh em");
+    console.log("day la thu thang nguoi ban gui list san pham chi tiet", e[0]);
+    // const a = e;
+    // if(e[0]?[0].product_name)
+    // {
+    //   e[0][0].product_name = "tao da sua dc roi";
+    // }
+    
+
+    /*
+        if
+    */
+    // socketIO.getIO().emit('livestream', e);
+    socket.broadcast.emit('livestream', e);
+    
+  })
+
+  socket.on('order', (e)=>{
+    onsole.log("co thang dat hang kia anh em");
+    socketIO.getIO().emit('order', e);
+  })
+
+  socket.on('order_accept', (e)=>{
+    onsole.log("seller da chap nhan don cua buyer");
+    socketIO.getIO().emit('order_accept', e);
   })
 
   socket.on('disconnect', () => {

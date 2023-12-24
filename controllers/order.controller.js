@@ -181,6 +181,7 @@ const createOrder = async (req, res) => {
       productDetailId: item.productDetailId,
       quantity: item.quantity
     })
+    await updateQuantity(item.productDetailId, item.quantity);
     if(item.cartId) {
       await Cart_product.destroy({
         where: {

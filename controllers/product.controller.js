@@ -103,12 +103,37 @@ const getProduct = async (productId) => {
 };
 
 
-
 const getProductById = async (req, res) => {
   const { productId } = req.params;
-  
   try {
     const product = await getProduct(productId);  
+    return res.status(200).json(product);
+  }
+  catch (error) {
+    res.status(404).json({message: "Not Found"})
+  }
+};
+
+const getProductByIdSocket = async (req, res) => {
+  // const { productId } = req.params;
+  try {
+    const chuoi = req.params.productId;
+    const mangSo = chuoi.split(",").map(function(item) {
+         return parseInt(item, 10);
+});
+
+    // const product = await getProduct(productId);  
+    const product = [];
+    for(const productId of mangSo) {
+        const result = await getProduct(productId); 
+        product.push(result);
+    }
+    // product = mangSo.map(async (item) => {
+    //     const result1 = await getProduct(item); 
+    //     return result1;
+    // })
+
+    console.log("day la thu minh da tao ra", product);
     return res.status(200).json(product);
   }
   catch (error) {
@@ -622,5 +647,6 @@ module.exports = {
   createProductNotVariation,
   getProductById,
   getProductByStore,
-  getProductByCategoryId
+  getProductByCategoryId,
+  getProductByIdSocket
 };
