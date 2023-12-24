@@ -1,15 +1,6 @@
-// const AccountModel = require('../models/account.models/account.model');
-// const VerifyModel = require('../models/account.models/verify.model');
-// const UserModel = require('../models/account.models/user.model');
-// const mailConfig = require('../config/mail.config');
-// const helper = require('../helpers');
-// const constants = require('../constants');
-//const bcrypt = require('bcryptjs');
+
 const { User } = require('../models');
-// const { Op } = require('sequelize');
-// const helpers = require('../helpers');
-// const constrants = require('../constrants');
-// const { login } = require('./auth.controller');
+
 
 const verifyAccount =  (req, res) => {
   res.send("Hello");
@@ -58,8 +49,34 @@ const getUserAuthorization = async (req, res) => {
 }
 
 
+const updateUserInfo = async (req, res) => {
+  const {avatar, fullname, phone_number, address} = req.body;
+  try {
+    const existedUser = await User.findOne({
+      where: {
+        username: req.username
+      }
+    })
+    if(!existedUser) {
+      return res.status(400).json({message: "Not found user"})
+    }
+    await existedUser.update({
+      avatar,
+      fullname,
+      phone_number,
+      address
+    })
+
+    res.status(204).json({message: "Update user successfully"});
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   verifyAccount,
   getUserByUsername,
-  getUserAuthorization
+  getUserAuthorization,
+  updateUserInfo
 };

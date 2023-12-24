@@ -1,5 +1,5 @@
 const userService = require('express').Router();
-const { getUserByUsername, getUserAuthorization } = require('../controllers/user.controller');
+const { getUserByUsername, getUserAuthorization, updateUserInfo } = require('../controllers/user.controller');
 //const userController = require('../controllers/user.controller');
 const { verifyToken } = require('../middleware/authMiddleware');
 
@@ -8,6 +8,7 @@ const { verifyToken } = require('../middleware/authMiddleware');
 // });
 userService.get('/getUserByUsername/:username', getUserByUsername);
 userService.get('/verifyUser',[verifyToken], getUserAuthorization);
+userService.put("/updateUser", [verifyToken], updateUserInfo);
 // Đăng ký tài khoản
 //userService.post('/signup', userController.postSignUp);
 

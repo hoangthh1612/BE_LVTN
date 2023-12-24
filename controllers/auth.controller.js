@@ -90,8 +90,8 @@ const login = async (req, res) => {
       }
     })
 
-    const {username, id, fullname} = foundUser.dataValues;
-    res.json({message: "Login successfully", accessToken, user_info: {username, id, fullname, isSeller: store ? true : false}});
+    const {username, id, fullname, avatar} = foundUser.dataValues;
+    res.json({message: "Login successfully", accessToken, user_info: {username, id, fullname, isSeller: store ? true : false, avatar}});
   } catch (err) {
     res.status(500).json({ error: "Login failed" });
   }
