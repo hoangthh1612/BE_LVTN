@@ -13,10 +13,10 @@ const handleRefreshToken = async (req, res) => {
         }
     })
     //foundUser.then((user) => console.log(user))
-    console.log(foundUser);
+    // console.log(foundUser);
     if (!foundUser) return res.sendStatus(403); //Forbidden 
-    console.log("hehe");
-    console.log(foundUser);
+    // console.log("hehe");
+    // console.log(foundUser);
     // evaluate jwt 
     jwt.verify(
         refreshToken,

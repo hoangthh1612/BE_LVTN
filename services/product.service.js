@@ -5,6 +5,7 @@ const { verifyToken } = require("../middleware/authMiddleware");
 
 productService.get("/", productController.getAll);
 productService.get('/getProductById/:productId', productController.getProductById);
+productService.get('/getProductByIdSocket/:productId', productController.getProductByIdSocket);
 productService.get('/getProductByStore', [verifyToken], productController.getProductByStore);
 productService.get("/getProductByStoreId/:storeId", productController.getProductByStoreId)
 productService.get("/getProductByCategoryId/:categoryId", productController.getProductByCategoryId);

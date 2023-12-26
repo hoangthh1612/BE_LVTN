@@ -227,7 +227,7 @@ const createOrder = async (req, res) => {
 
 const getOrderByOrderSn = async (req, res) => {
   const {orderSn} = req.params;
-  console.log(req.params);
+  // console.log(req.params);
   // const user = await User.findOne({
   //   where: {
   //     username: req.username
@@ -369,7 +369,7 @@ const getOrderByStoreId = async (req, res) => {
       return false;
     })
     
-    console.log(type); 
+    // console.log(type); 
     let order_status = getOrderStatus(type);
     const ordersByStatus = !order_status ? filterOrders : filterOrders?.filter(item => item.order_status === order_status);
     return res.status(200).json(ordersByStatus);

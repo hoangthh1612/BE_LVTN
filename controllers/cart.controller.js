@@ -117,7 +117,7 @@ const getCartProduct = async (req, res) => {
             // }
         })
         const productDetailIds = cartProducts?.map((item) => item?.productDetailId);
-        console.log(productDetailIds);
+        // console.log(productDetailIds);
         
         let result = [];
         for(const item of cartProducts) {
@@ -150,14 +150,14 @@ const removeProductFromCart = async (req, res) => {
                 userId: user.id
             }
         })
-        console.log(productDetailId);
+        // console.log(productDetailId);
         const cartProduct = await Cart_product.findOne({
             where: {
                 productDetailId,
                 cartId: cart.id 
             }
         })
-        console.log(cartProduct);
+        // console.log(cartProduct);
         if(!cartProduct) {
             return res.status(404).json({message: "Not Found"})
         }

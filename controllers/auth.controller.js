@@ -65,7 +65,7 @@ const login = async (req, res) => {
       // { userId: foundUser._id, userRole: foundUser.role }, // Chú ý ở đây: foundUser.role chính là thông tin về vai trò của người dùng
       { username: foundUser.username, userId: foundUser.id },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "300h" }
     );
 
     const refreshToken = jwt.sign(
@@ -84,6 +84,22 @@ const login = async (req, res) => {
       secure: true,
       maxAge: 24 * 60 * 60 * 1000
     });
+
+    res.cookie('username', foundUser.username, {
+      httpOnly: true,
+      sameSite: 'None', 
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000
+    });
+
+    res.cookie('userId', foundUser.id, {
+      httpOnly: true,
+      sameSite: 'None', 
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000
+    });
+
+
     const store = await Store.findOne({
       where: {
         userId: foundUser.id
@@ -96,8 +112,6 @@ const login = async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 };
-
-
 
 
 const getCookie = async (req, res) => {
@@ -115,7 +129,7 @@ const getCookie = async (req, res) => {
 
 const logout = async (req, res) => {
   const cookies = req.cookies;
-  console.log(cookies.jwt);
+  // console.log(cookies.jwt);
   if(!cookies?.jwt) return res.sendStatus(204);
   const refreshToken = cookies.jwt;
   const foundUser = await User.findOne({
@@ -131,7 +145,7 @@ const logout = async (req, res) => {
   
   foundUser.refreshToken = '';
   const result = await foundUser.save();
-  console.log(result);
+  // console.log(result);
 
   res.clearCookie('jwt', {httpOnly: true,sameSite: 'None', secure: true})
   .sendStatus(204);

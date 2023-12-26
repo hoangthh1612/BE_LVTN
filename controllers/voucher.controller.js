@@ -87,7 +87,7 @@ const getNumsUsedVoucher = async (userId, voucherId) => {
     if(item.Order_vouchers?.length > 0) {
       
       if(item.Order_vouchers[0]?.voucherId === voucherId){
-        console.log("come on...");
+        // console.log("come on...");
         result += 1;
       }
       
@@ -132,7 +132,7 @@ const getVoucherByStoreId = async (req, res) => {
       for(const item of vouchers) {
         // console.log(item.id);
         let num = await getNumsUsedVoucher(user.id, item.id);
-        console.log('num...', num);
+        // console.log('num...', num);
         if(item.used > num) result.push(item);
       }
       return res.status(200).json(vouchers);
@@ -161,12 +161,12 @@ const getVoucherOfStore = async (req, res) => {
     const vouchers = await Voucher.findAll({
       where: {
         storeId: store.id,
-        start_time: {
-          [Op.lte]: currentDate,
-        },
-        end_time: {
-          [Op.gte]: currentDate
-        }
+        // start_time: {
+        //   [Op.lte]: currentDate,
+        // },
+        // end_time: {
+        //   [Op.gte]: currentDate
+        // }
 
       },
       include: [
@@ -178,6 +178,7 @@ const getVoucherOfStore = async (req, res) => {
         }
       ]
     })
+
     return res.status(200).json(vouchers);
   } catch (error) {
     console.log(error);
@@ -190,5 +191,6 @@ module.exports = {
   getAll,
   createVoucher,
   getVoucherByStoreId,
-  getVoucherOfStore
+  getVoucherOfStore,
+  // deleteVoucherOfStore,
 };

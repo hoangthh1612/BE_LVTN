@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -15,12 +14,7 @@ const cookieParser = require('cookie-parser');
 const normalizePort = (port) => parseInt(port, 10);
 const PORT = normalizePort(process.env.PORT || 8000);
 const { DataTypes } = require("sequelize");
-
 const insertData = require('./data/insertData');
-
-
-
-
 app.use(credentials)
 //app.use(cors());
 app.use(cors(corsOptions));
@@ -29,19 +23,14 @@ app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-
 app.use(cookieParser());
 
-const io = new Server(server, {
-  cors: {
-      origin: ["http://localhost:3000", "http://localhost:3001"],
-      credentials: true
-    }
-});
-
-
-const likesCounts = {};
-const userToSocketMapping = new Map();
+// const io = new Server(server, {
+//   cors: {
+//       origin: ["http://localhost:3000", "http://localhost:3001"],
+//       credentials: true
+//     }
+// });
 
 const getLikesByRoom = async (roomId) => {
   const livestream = await Livestream.findOne({
@@ -53,43 +42,8 @@ const getLikesByRoom = async (roomId) => {
   return livestream;
 }
 
-io.on("connection", (socket) => { 
-  
-  socket.on("join-room", async (data) => {
-    const {roomId, username} = data;
-    socket.join(roomId);
-    // if(!likesCounts[room]) {
-    //   likesCounts[room] = 0;
-    // }
-    console.log(data);
-    // io.to(room).emit('updateLikes', likesCounts[room]);
-    // io.to(room).emit('orderProduct', order);
-    
-    //io.emit('updateLikes', likesCounts[room]);
-  })
-  socket.on('like', async (data) => {
-    const {roomId, username} = data;
-    const livestream = await getLikesByRoom(roomId);
-    livestream.nums_like += 1;
-    await livestream.save();
-
-    io.to(roomId).emit('updateLikes', livestream.nums_like);
-  })
-
-  socket.on("sendOrderProduct", (data) => {
-    console.log(data);
-    const {order, roomId} = data;
-    io.to(roomId).emit("orderProduct", order);
-    //io.emit("orderProduct", order);
-  })
-
-  socket.on('disconnected', () => {
-    console.log("Client disconnected");
-  })
-})
-console.log(likesCounts);
 db.sequelize.sync({ alter: false }).then(() => {
-  //insertData.initial();
+  // insertData.initial();
 });
 // app.use(cors(corsConfig));
 
@@ -108,7 +62,6 @@ const productReviewRoute = require('./services/product_review.service');
 const followRoute = require('./services/follow.service');
 const notiRoute = require('./services/notification.service');
 
-
 //const {verifyToken} = require('./middleware/authMiddleware');
 app.use('/apis/auth', authService);
 app.use('/apis/user', userService);
@@ -124,7 +77,63 @@ app.use('/apis/product-review', productReviewRoute);
 app.use('/apis/follow', followRoute);
 app.use('/apis/notification', notiRoute);
   
+const socketIO = require('./config/socket.io.config');
+socketIO.init(server);
+socketIO.getIO().on('connection', (socket) => {
+  console.log("co ket noi kia aeeeeeeeeeeeeeeeeeeeeeee");
+  // socketIO.connectedUser.push({ userId: socket.user.id, socketId: socket.id });
+  // console.log("then nay no vo kia aeeee", socket.id);
+  if(socket.user === "seller"){
+    console.log("thang nay la nguoi ban");
+  }
 
+  if(socket.user === "buyer"){
+    console.log("thang nay la nguoi mua");
+  }
+
+  socket.on('foo', (e)=>{
+    console.log("co thang mua hang kia ae");
+    socketIO.getIO().emit('foo', "tao da xac nhan roi nha maiiiiiiiiiii");
+    // console.log(e);
+  })
+
+  // gửi sản phẩm product_detail vào đây
+  socket.on('livestream', (e)=>{
+    // console.log("co thang vo livestream kia anh em");
+    // console.log("day la thu thang nguoi ban gui list san pham chi tiet", e[0]);
+    // const a = e;
+    // if(e[0]?[0].product_name)
+    // {
+    //   e[0][0].product_name = "tao da sua dc roi";
+    // }
+    
+
+    /*
+        if
+    */
+    // socketIO.getIO().emit('livestream', e);
+    socket.broadcast.emit('livestream', e);
+    
+  })
+
+  socket.on('order', (e)=> {
+    console.log("co thang dat hang kia anh emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm");
+    socketIO.getIO().emit('order', e);
+  })
+
+  socket.on('order_accept', (e)=>{
+    console.log("seller da chap nhan don cua buyer");
+    socketIO.getIO().emit('order_accept', e);
+  })
+
+  socket.on('disconnect', () => {
+    console.log("disconnect: ", socket.id);
+    // let userIndex = socketIO.connectedUser.findIndex(
+    //   (user) => user.socketId === socket.id
+    // );
+    // if (userIndex !== -1) socketIO.connectedUser.splice(userIndex, 1);
+  });
+});
 
 
 server.listen(PORT, () => {

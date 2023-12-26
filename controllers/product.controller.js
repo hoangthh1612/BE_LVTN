@@ -62,7 +62,7 @@ const getProduct = async (productId) => {
     let name = await getVariationName(item.variationId);
     add_variations.push({ ...item.dataValues, variation_name: name });
   }
-  console.log(add_variations);
+  // console.log(add_variations);
   const combineVariation = skus_variation_options.map((item) => {
     let result;
     for (const i of add_variations) {
@@ -104,12 +104,37 @@ const getProduct = async (productId) => {
 };
 
 
-
 const getProductById = async (req, res) => {
   const { productId } = req.params;
-  
   try {
     const product = await getProduct(productId);  
+    return res.status(200).json(product);
+  }
+  catch (error) {
+    res.status(404).json({message: "Not Found"})
+  }
+};
+
+const getProductByIdSocket = async (req, res) => {
+  // const { productId } = req.params;
+  try {
+    const chuoi = req.params.productId;
+    const mangSo = chuoi.split(",").map(function(item) {
+         return parseInt(item, 10);
+});
+
+    // const product = await getProduct(productId);  
+    const product = [];
+    for(const productId of mangSo) {
+        const result = await getProduct(productId); 
+        product.push(result);
+    }
+    // product = mangSo.map(async (item) => {
+    //     const result1 = await getProduct(item); 
+    //     return result1;
+    // })
+
+    console.log("day la thu minh da tao ra", product);
     return res.status(200).json(product);
   }
   catch (error) {
@@ -280,7 +305,7 @@ const createProduct = async (req, res) => {
       storeId: store.id,
     },
   });
-  console.log(products);
+  // console.log(products);
   const products_name = products?.map((item) => item.product_name);
   if (products_name?.includes(product_name)) {
     return res
@@ -324,7 +349,7 @@ const createProductNotVariation = async (req, res) => {
       storeId: store.id,
     },
   });
-  console.log(products);
+  // console.log(products);
   const products_name = products?.map((item) => item.product_name);
   if (
     products_name?.findIndex((name) => name === basic_info?.product_name) !== -1
@@ -422,7 +447,7 @@ const createProductVariation = async (req, res) => {
           id: variation_option.id,
           option_value: variation_option.type_value,
         });
-        console.log(variation_option.id);
+        // console.log(variation_option.id);
       }
     }
 
@@ -550,7 +575,7 @@ const updateAndCreateProductVariation = async (req, res) => {
         );
         ids.push(variation_option?.id);
       });
-      console.log(ids);
+      // console.log(ids);
       const sku = await Product_detail.create({
         productId,
         price: model.price,
@@ -646,6 +671,7 @@ module.exports = {
   getProductById,
   getProductByStore,
   getProductByCategoryId,
+  getProductByIdSocket,
   updateProductBasicInfo,
   updateProductDetail,
   updateAndCreateProductVariation,
