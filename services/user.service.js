@@ -1,6 +1,6 @@
 const userService = require('express').Router();
-const { getUserByUsername, getUserAuthorization, createRoleSeller, createSellerStore } = require('../controllers/user.controller');
-const { getUserByUsername, getUserAuthorization, updateUserInfo } = require('../controllers/user.controller');
+const { getUserByUsername, getUserAuthorization, createRoleSeller, createSellerStore, updateUserInfo } = require('../controllers/user.controller');
+// const { getUserByUsername, getUserAuthorization,  } = require('../controllers/user.controller');
 //const userController = require('../controllers/user.controller');
 const { verifyToken } = require('../middleware/authMiddleware');
 

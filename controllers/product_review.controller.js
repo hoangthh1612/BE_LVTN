@@ -47,7 +47,7 @@ const getNumOfReview = async (req, res) => {
             include: User
         })
         const numsOfReview = productReviews?.map((item) => item.rating);
-        console.log(numsOfReview);
+        // console.log(numsOfReview);
         let result = 0;
         for(let num of numsOfReview) {
             result += num;

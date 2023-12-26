@@ -51,7 +51,7 @@ const getProduct = async (productId) => {
     let name = await getVariationName(item.variationId);
     add_variations.push({ ...item.dataValues, variation_name: name });
   }
-  console.log(add_variations);
+  // console.log(add_variations);
   const combineVariation = skus_variation_options?.map((item) => {
     let result = {};
     for (const i of add_variations) {

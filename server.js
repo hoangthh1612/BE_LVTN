@@ -25,12 +25,12 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-const io = new Server(server, {
-  cors: {
-      origin: ["http://localhost:3000", "http://localhost:3001"],
-      credentials: true
-    }
-});
+// const io = new Server(server, {
+//   cors: {
+//       origin: ["http://localhost:3000", "http://localhost:3001"],
+//       credentials: true
+//     }
+// });
 
 const getLikesByRoom = async (roomId) => {
   const livestream = await Livestream.findOne({
@@ -94,13 +94,13 @@ socketIO.getIO().on('connection', (socket) => {
   socket.on('foo', (e)=>{
     console.log("co thang mua hang kia ae");
     socketIO.getIO().emit('foo', "tao da xac nhan roi nha maiiiiiiiiiii");
-    console.log(e);
+    // console.log(e);
   })
 
   // gửi sản phẩm product_detail vào đây
   socket.on('livestream', (e)=>{
-    console.log("co thang vo livestream kia anh em");
-    console.log("day la thu thang nguoi ban gui list san pham chi tiet", e[0]);
+    // console.log("co thang vo livestream kia anh em");
+    // console.log("day la thu thang nguoi ban gui list san pham chi tiet", e[0]);
     // const a = e;
     // if(e[0]?[0].product_name)
     // {
@@ -116,13 +116,13 @@ socketIO.getIO().on('connection', (socket) => {
     
   })
 
-  socket.on('order', (e)=>{
-    onsole.log("co thang dat hang kia anh em");
+  socket.on('order', (e)=> {
+    console.log("co thang dat hang kia anh emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm");
     socketIO.getIO().emit('order', e);
   })
 
   socket.on('order_accept', (e)=>{
-    onsole.log("seller da chap nhan don cua buyer");
+    console.log("seller da chap nhan don cua buyer");
     socketIO.getIO().emit('order_accept', e);
   })
 

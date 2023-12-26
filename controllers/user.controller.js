@@ -11,7 +11,7 @@ const { User, User_role, Store } = require('../models');
 // const constrants = require('../constrants');
 // const { login } = require('./auth.controller');
 
-const { User } = require('../models');
+// const { User } = require('../models');
 
 
 const verifyAccount =  (req, res) => {
@@ -40,7 +40,7 @@ const getUserByUsername  = async (req, res) => {
     const user = await getUser(username);
     const {dataValues} = user;
     const {password, refreshToken, ...others} = dataValues;
-    console.log(others);
+    // console.log(others);
     res.status(200).json(others);
     
   } catch (err) {
