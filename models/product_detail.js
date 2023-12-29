@@ -64,6 +64,14 @@ module.exports = (sequelize, DataTypes) => {
       price: {
         type: DataTypes.INTEGER,
       },
+      sold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+      },
+      isDeleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      }
     },
   {
       sequelize,

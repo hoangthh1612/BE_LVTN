@@ -131,9 +131,11 @@ const updateQuantity = async (id, quantity) => {
     },
   });
   productDetail.quantity -= quantity;
+  productDetail.sold += quantity;
   await productDetail.save();
   return productDetail;
 };
+
 
 const createOrder = async (req, res) => {
   const user = await User.findOne({
@@ -182,6 +184,7 @@ const createOrder = async (req, res) => {
       quantity: item.quantity
     })
     await updateQuantity(item.productDetailId, item.quantity);
+
     if(item.cartId) {
       await Cart_product.destroy({
         where: {
