@@ -79,7 +79,12 @@ module.exports = (sequelize, DataTypes) => {
         },
         inLivestream: {
           type: DataTypes.BOOLEAN,
+        },
+        isDeleted: {
+          type: DataTypes.BOOLEAN,
+          defaultValue: false
         }
+
       },
     //   {
     //     timestamps: false,

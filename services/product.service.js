@@ -10,7 +10,7 @@ productService.get('/getProductByStore', [verifyToken], productController.getPro
 productService.get("/getProductByStoreId/:storeId", productController.getProductByStoreId)
 productService.get("/getProductByCategoryId/:categoryId", productController.getProductByCategoryId);
 productService.get("/getProductBestSeller", productController.getProductBestSeller);
-
+productService.get("/getProductBestSellerOfStore/:storeId", productController.getTopProductOfStore);
 
 ///
 productService.post("/add_item", [verifyToken], productController.createProductNotVariation);
