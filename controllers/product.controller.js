@@ -246,8 +246,8 @@ const getProductByCategoryId = async (req, res) => {
   }
 };
 
-// get Top product best seller
-
+/* get Top product best seller */
+// top product
 const getProductBestSeller = async (req, res) => {
   try {
     const orderDetails = await Order_detail.findAll({
@@ -282,7 +282,46 @@ const getProductBestSeller = async (req, res) => {
   //res.status(200).json(productIds);
 }
 
+// top product of store
 
+const getTopProductOfStore = async (req, res) =>{
+  const {storeId} = req.params;
+  try {
+    const products = await Product.findAll({
+      where: {
+        storeId,
+      },
+      include: {
+        model: Product_detail
+      }
+      
+    })
+    const filterProducts = products?.map((item) => {
+      let result = 0;
+      for(const i of item.Product_details) {
+        result += i.sold;
+      
+      }
+      return {
+        ...item.dataValues,
+        nums_sold: result
+      }
+    })
+    const sortProducts = filterProducts?.sort((a, b) => {
+      return b.nums_sold - a.nums_sold
+    })
+    const result = [];
+    const productIds = sortProducts.slice(0, 10).map((item) => item.id);
+    for(const productId of productIds) {
+      const product = await getProduct(productId);
+      result.push(product);
+    }  
+    res.status(200).json(result);
+    //res.status(200).json(sortProducts.slice(0, 10));
+  } catch (error) {
+    console.log(error);  
+  }
+}
 
 /*----------------------------Create product ------------------------ */
 // -> Create new product (POST)
@@ -675,5 +714,6 @@ module.exports = {
   updateProductBasicInfo,
   updateProductDetail,
   updateAndCreateProductVariation,
-  getProductBestSeller
+  getProductBestSeller,
+  getTopProductOfStore
 };
