@@ -20,6 +20,27 @@ app.use(credentials)
 app.use(cors(corsOptions));
 
 //app.use(cors({ origin: true, credentials: true }));
+
+app.use(function (req, res, next) {
+
+  // Website you wish to allow to connect
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+  // Request methods you wish to allow
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+  // Request headers you wish to allow
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+  // Set to true if you need the website to include cookies in the requests sent
+  // to the API (e.g. in case you use sessions)
+  res.setHeader('Access-Control-Allow-Credentials', true);
+
+  // Pass to next layer of middleware
+  next();
+});
+
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -61,7 +82,7 @@ const cartRoute = require('./services/cart.service');
 const productReviewRoute = require('./services/product_review.service');
 const followRoute = require('./services/follow.service');
 const notiRoute = require('./services/notification.service');
-
+const paymentRoute = require('./services/payment.service');
 //const {verifyToken} = require('./middleware/authMiddleware');
 app.use('/apis/auth', authService);
 app.use('/apis/user', userService);
@@ -76,7 +97,9 @@ app.use('/apis/cart', cartRoute);
 app.use('/apis/product-review', productReviewRoute);
 app.use('/apis/follow', followRoute);
 app.use('/apis/notification', notiRoute);
+app.use('/apis/payment', paymentRoute);
   
+
 const socketIO = require('./config/socket.io.config');
 socketIO.init(server);
 socketIO.getIO().on('connection', (socket) => {
@@ -91,11 +114,11 @@ socketIO.getIO().on('connection', (socket) => {
     console.log("thang nay la nguoi mua");
   }
 
-  socket.on('foo', (e)=>{
-    console.log("co thang mua hang kia ae");
-    socketIO.getIO().emit('foo', "tao da xac nhan roi nha maiiiiiiiiiii");
-    // console.log(e);
-  })
+  // socket.on('foo', (e)=>{
+  //   console.log("co thang mua hang kia ae");
+  //   socketIO.getIO().emit('foo', "tao da xac nhan roi nha maiiiiiiiiiii");
+  //   // console.log(e);
+  // })
 
   // gửi sản phẩm product_detail vào đây
   socket.on('livestream', (e)=>{
@@ -107,7 +130,6 @@ socketIO.getIO().on('connection', (socket) => {
     //   e[0][0].product_name = "tao da sua dc roi";
     // }
     
-
     /*
         if
     */
@@ -117,7 +139,7 @@ socketIO.getIO().on('connection', (socket) => {
   })
 
   socket.on('order', (e)=> {
-    console.log("co thang dat hang kia anh emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm");
+    console.log("co don dat hang kia aeeeeeeeeeeeeeeeeee");
     socketIO.getIO().emit('order', e);
   })
 
