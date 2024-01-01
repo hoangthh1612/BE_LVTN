@@ -109,7 +109,7 @@ const getCartProduct = async (req, res) => {
             where: {
                 cartId: cart.id
             },
-            
+            order: [['updatedAt', 'DESC']]
             // include: {
             //     model: Product_detail,
             //     include: ProductDetail_VariationOption
