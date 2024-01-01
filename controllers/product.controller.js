@@ -250,37 +250,58 @@ const getProductByCategoryId = async (req, res) => {
 // top product
 const getProductBestSeller = async (req, res) => {
   try {
-    const orderDetails = await Order_detail.findAll({
-      include: Product_detail
-    });
-    const result = {};
-    orderDetails.forEach((item) => {
-      const {productDetailId, quantity, Product_detail} = item;
-      const {productId} = Product_detail;
-      if(result[productId]) {
-        result[productId] += quantity;
-      }  
-      else {
-        result[productId] = quantity;
+    // const orderDetails = await Order_detail.findAll({
+    //   include: Product_detail
+    // });
+    // const result = {};
+    // orderDetails.forEach((item) => {
+    //   const {productDetailId, quantity, Product_detail} = item;
+    //   const {productId} = Product_detail;
+    //   if(result[productId]) {
+    //     result[productId] += quantity;
+    //   }
+    //   else {
+    //     result[productId] = quantity;
+    //   }
+    // })
+    // const resultArr = Object.keys(result).map(productId => ({productId: parseInt(productId), quantity: result[productId]}));
+    // const sortResult = resultArr.sort((a, b) => b.quantity - a.quantity);
+    // const ids = sortResult?.map((item) => item.productId);
+    // const productIds = ids.length > 10 ? ids.slice(0, 10) : ids;
+    // const products = [];
+    // for(const productId of productIds) {
+    //   const product = await getProduct(productId);
+    //   products.push(product);
+    // }
+    // res.status(200).json(products);
+    const products = await Product.findAll({
+      include: {
+        model: Product_detail
       }
-    })
-    const resultArr = Object.keys(result).map(productId => ({productId: parseInt(productId), quantity: result[productId]}));
-    const sortResult = resultArr.sort((a, b) => b.quantity - a.quantity);
-    const ids = sortResult?.map((item) => item.productId);
-    const productIds = ids.length > 10 ? ids.slice(0, 10) : ids;
-    const products = [];
-    for(const productId of productIds) {
+    });
+   
+    const details = products?.map((item) => {
+      let result = 0;
+      for (const i of item?.Product_details) {
+        result += i.sold;
+      }
+      return {
+        ...item.dataValues,
+        sold: result,
+      };
+    });
+    const sortProducts = details?.sort((a, b) => b.sold - a.sold);
+    const productIds = sortProducts?.slice(0, 10).map((item) => item.id);
+    const result = [];
+    for (const productId of productIds) {
       const product = await getProduct(productId);
-      products.push(product);
-    }  
-    res.status(200).json(products);
+      result.push(product);
+    }
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(400).json({ message: "Error" });
   }
-  catch(err) {
-    res.status(400).json({message: "Error"})
-  }
-
-  //res.status(200).json(productIds);
-}
+};
 
 // top product of store
 
