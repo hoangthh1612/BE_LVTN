@@ -1,9 +1,8 @@
 
 const moment = require('moment');
 const create_payment_url = (req, res, next) =>{
-
+    const {totalPrice} = req.body;
     process.env.TZ = 'Asia/Ho_Chi_Minh';
-    
     let date = new Date();
     let createDate = moment(date).format('YYYYMMDDHHmmss');
     
@@ -13,7 +12,6 @@ const create_payment_url = (req, res, next) =>{
         req.connection.socket.remoteAddress || 'http://localhost:3000' ||  'http://localhost:3001';
 
     // let config = require('../config');
-    
     // let tmnCode = config.get('vnp_TmnCode');   //
     // let secretKey = config.get('vnp_HashSecret'); //
     // let vnpUrl = config.get('vnp_Url');//
@@ -27,10 +25,10 @@ const create_payment_url = (req, res, next) =>{
     let tmnCode = "HM6S16VX"; 
     let secretKey = "IIQITGSPMZTBKJSYNYMVWSJOAMOLXYQA";
     let vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    let returnUrl = "https://www.facebook.com/";
+    let returnUrl = "http://localhost:3000/orders";
     let orderId = moment(date).format('DDHHmmss');
     // let amount = req.body.amount || 2000000;
-    let amount =  2000000;
+    let amount =  totalPrice;
     // let bankCode = req.body.bankCode;
     let bankCode = "VNBANK";
     

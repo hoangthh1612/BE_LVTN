@@ -94,7 +94,7 @@ const createSellerStore = async (req, res) => {
 }
 
 const updateUserInfo = async (req, res) => {
-  const {avatar, fullname, phone_number, address} = req.body;
+  const {avatar, fullname, phone_number, address, address2} = req.body;
   try {
     const existedUser = await User.findOne({
       where: {
@@ -108,7 +108,7 @@ const updateUserInfo = async (req, res) => {
       avatar,
       fullname,
       phone_number,
-      address
+      address: address2
     })
 
     res.status(204).json({message: "Update user successfully"});
@@ -118,11 +118,18 @@ const updateUserInfo = async (req, res) => {
   }
 }
 
+
+const getUserByUserId= async (req, res) => {
+    const {userId} = req.body;
+
+}
+
 module.exports = {
   verifyAccount,
   getUserByUsername,
   getUserAuthorization,
   createRoleSeller,
   createSellerStore,
-  updateUserInfo
+  updateUserInfo,
+  // getUserByStoreId,
 };

@@ -158,7 +158,9 @@ const createOrder = async (req, res) => {
     fullname,
     phone,
     voucher_info,
-    storeId
+    storeId,
+    shipping_fee,
+    discount
   } = req.body;
   let order_sn = `${user.id}${storeId}` + `${Date.now().toString()}`;
   const {orderTotal, voucherId} = voucher_info;
@@ -167,9 +169,13 @@ const createOrder = async (req, res) => {
     fullname,
     phone,
     shipping_address,
-    payment_method: "cash",
+    payment_method: payment_method==1? "cash":"vnpay",
     userId: user.id,
-    total_price: orderTotal
+    total_price: total_price,
+    shipping_fee: shipping_fee,
+    discount: discount,
+
+
   })  
   if(voucherId) {
     const newVoucher = await Order_voucher.create({
@@ -254,14 +260,12 @@ const getOrderByOrderSn = async (req, res) => {
     for (const item of order.Order_details) {
       let product_detail = await getProductDetail(item.productDetailId);
       order_details.push({ ...item.dataValues, product_detail });
-
     }
     //result.push({ ...order.dataValues, Order_details: order_details });
-    return res.status(200).json({...order.dataValues, Order_details: order_details} );
+    return res.status(200).json({...order.dataValues, Order_details: order_details, order: order} );
   } catch (error) {
     console.log(error);
   }
-
 } 
 
 const updateOrderStatus = async (req, res) => {
@@ -283,38 +287,26 @@ const updateOrderStatus = async (req, res) => {
     order.order_status = "DELIVERING";
   }
   await order.save();
-
   return res.status(204).json({message: "Update Order sucessfull"});
-  
 }
 
 
 const getOrderStatus = (type) => {
     let order_status = null;
     if(type === 'pending') {
-      
       order_status = "PENDING"
-      
     }
-    else if(type === 'waiting_delivery') {
-      
+    else if(type === 'waiting_delivery') { 
       order_status = "WAITING_DELIVERY"
-      
     }
     else if(type === 'delivering') {
-      
       order_status = "DELIVERING"
-      
     }
-    else if(type === 'completed') {
-      
-      order_status = "COMPLETED"
-      
+    else if(type === 'completed') { 
+      order_status = "COMPLETED"   
     }
-    else if(type === 'cancelled') {
-      
-      order_status = "CANCELLED"
-      
+    else if(type === 'cancelled') {  
+      order_status = "CANCELLED" 
     }
   return order_status;
 }
