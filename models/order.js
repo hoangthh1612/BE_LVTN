@@ -69,7 +69,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: "PENDING"
       },
       payment_method: {
-        type: DataTypes.ENUM("cash", "paypal"),
+        type: DataTypes.ENUM("cash", "vnpay"),
       },
       total_price: {
         type: DataTypes.INTEGER,
@@ -83,6 +83,13 @@ module.exports = (sequelize, DataTypes) => {
       shipping_address: {
         type: DataTypes.STRING,
       },
+      discount: {
+        type: DataTypes.INTEGER,
+      },
+      shipping_fee: {
+        type: DataTypes.INTEGER
+      }
+
     },
 
     {
