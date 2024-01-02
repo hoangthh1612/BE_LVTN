@@ -25,7 +25,7 @@ const create_payment_url = (req, res, next) =>{
     let tmnCode = "HM6S16VX"; 
     let secretKey = "IIQITGSPMZTBKJSYNYMVWSJOAMOLXYQA";
     let vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    let returnUrl = "http://localhost:3000/orders";
+    let returnUrl = "http://localhost:3001/orders";
     let orderId = moment(date).format('DDHHmmss');
     // let amount = req.body.amount || 2000000;
     let amount =  totalPrice;
