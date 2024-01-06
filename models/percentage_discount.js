@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      max_price: {
+      max_reduction: {
         type: DataTypes.INTEGER,
         //allowNull: false,
       }
