@@ -161,12 +161,7 @@ const getVoucherOfStore = async (req, res) => {
     const vouchers = await Voucher.findAll({
       where: {
         storeId: store.id,
-        // start_time: {
-        //   [Op.lte]: currentDate,
-        // },
-        // end_time: {
-        //   [Op.gte]: currentDate
-        // }
+        deleted: false
 
       },
       include: [
@@ -185,6 +180,21 @@ const getVoucherOfStore = async (req, res) => {
   }
 }
 
+const deleteVoucher = async (req, res) => {
+  const {voucherId} = req.params;
+  try {
+    const voucher = await Voucher.findOne({
+      where: {
+        id: voucherId
+      }
+    })
+    voucher.deleted = true;
+    await voucher.save();
+    res.status(204).json({message: "Deleted voucher successfully"})
+  } catch (error) {
+    console.log(error);
+  }
+} 
 
 
 module.exports = {
@@ -192,5 +202,6 @@ module.exports = {
   createVoucher,
   getVoucherByStoreId,
   getVoucherOfStore,
+  deleteVoucher
   // deleteVoucherOfStore,
 };

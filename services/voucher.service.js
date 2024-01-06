@@ -7,5 +7,5 @@ voucherService.get("/", voucherController.getAll);
 voucherService.post('/create', [verifyToken], voucherController.createVoucher);
 voucherService.get('/getVoucherByStoreId/:storeId',[verifyToken], voucherController.getVoucherByStoreId);
 voucherService.get('/getVoucherOfStore', [verifyToken], voucherController.getVoucherOfStore);
-
+voucherService.put('/deleteVoucher/:voucherId', voucherController.deleteVoucher);
 module.exports = voucherService;
