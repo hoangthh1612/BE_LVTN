@@ -198,11 +198,19 @@ const getProductsByLivestremId = async (req, res) => {
         livestreamId: livestream?.id,
       },
     });
-    const productIds = livestreamProduct.map((item) => item.productId);
+    const productIds = livestreamProduct.map((item) => {
+      return { "productId": item.productId,
+               "order": item.orderInLive}
+     
+    });
     const result = [];
   for(const productId of productIds) {
-    const product = await getProduct(productId);
-    result.push(product);
+    const product = await getProduct(productId.productId);
+    result.push({
+      "product":product,
+      "order": productId.order
+
+  });
   }  
   res.status(200).json(result);
   } catch (error) {
@@ -223,9 +231,21 @@ const getLivestream = async (req, res) => {
   return res.status(200).json(livestream);
 }
 
+const getAllLivestream = async (req, res) => {
+  // const {roomId} = req.params;
+  const livestream = await Livestream.findAll({
+    where: {
+      // roomId,
+      inLive: true
+    }
+  })
+  return res.status(200).json(livestream);
+}
+
 module.exports = {
   createLivestream,
   updateEndStream,
   getProductsByLivestremId,
-  getLivestream
+  getLivestream,
+  getAllLivestream
 };

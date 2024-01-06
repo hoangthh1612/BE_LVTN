@@ -49,7 +49,6 @@ db.sequelize.sync({ alter: false }).then(() => {
   // insertData.initial();
 });
 // app.use(cors(corsConfig));
-
 const authService =  require('./services/auth.service');
 const productService = require('./services/product.service');
 const otherService = require('./services/other.service');
@@ -81,7 +80,6 @@ app.use('/apis/follow', followRoute);
 app.use('/apis/notification', notiRoute);
 app.use('/apis/payment', paymentRoute);
   
-
 const socketIO = require('./config/socket.io.config');
 socketIO.init(server);
 socketIO.getIO().on('connection', (socket) => {
@@ -95,15 +93,9 @@ socketIO.getIO().on('connection', (socket) => {
   if(socket.user === "buyer"){
     console.log("thang nay la nguoi mua");
   }
-
-  // socket.on('foo', (e)=>{
-  //   console.log("co thang mua hang kia ae");
-  //   socketIO.getIO().emit('foo', "tao da xac nhan roi nha maiiiiiiiiiii");
-  //   // console.log(e);
-  // })
-
+ 
   // gửi sản phẩm product_detail vào đây
-  socket.on('livestream', (e)=>{
+  socket.on('livestream', (e) =>{
     // console.log("co thang vo livestream kia anh em");
     // console.log("day la thu thang nguoi ban gui list san pham chi tiet", e[0]);
     // const a = e;
@@ -111,7 +103,6 @@ socketIO.getIO().on('connection', (socket) => {
     // {
     //   e[0][0].product_name = "tao da sua dc roi";
     // }
-    
     /*
         if
     */
@@ -119,6 +110,7 @@ socketIO.getIO().on('connection', (socket) => {
     socket.broadcast.emit('livestream', e);
     
   })
+
 
   socket.on('order', (e)=> {
     console.log("co don dat hang kia aeeeeeeeeeeeeeeeeee");
@@ -130,6 +122,17 @@ socketIO.getIO().on('connection', (socket) => {
     socketIO.getIO().emit('order_accept', e);
   })
 
+  socket.on('livestream_join', (e)=>{
+    console.log("handlde join livestream !!!!");
+    
+    socket.broadcast.emit('livestream_join', e);
+  })
+
+  socket.on('livestream_leave', (e)=>{
+    console.log("handlde join livestream !!!!");
+    socketIO.getIO().emit('livestream_leave', e);
+  })
+
   socket.on('disconnect', () => {
     console.log("disconnect: ", socket.id);
     // let userIndex = socketIO.connectedUser.findIndex(
@@ -138,7 +141,6 @@ socketIO.getIO().on('connection', (socket) => {
     // if (userIndex !== -1) socketIO.connectedUser.splice(userIndex, 1);
   });
 });
-
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
