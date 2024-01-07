@@ -40,7 +40,7 @@ const createVoucher = async (req, res) => {
       end_time,
       discount,
     } = req.body;
-    const { type, value } = discount;
+  
     const newVoucher = await Voucher.create({
       code: code_name,
       minSpend: min_spend,
@@ -54,16 +54,17 @@ const createVoucher = async (req, res) => {
     if(end_time <= start_time) {
       return res.status(400).json({message: "End date cannot be earlier than start date"})
     }
-    if (type === "amount") {
-      console.log("amount....");
+    if (discount.type === "amount") {
+     
       await Amount_discount.create({
-        amount: value,
+        amount: discount.amount,
         voucherId: newVoucher.id,
       });
     } else {
       await Percentage_discount.create({
-        percent: value,
+        percent: discount.percent,
         voucherId: newVoucher.id,
+        max_reduction: discount.max_reduction
       });
     }
     return res
